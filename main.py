@@ -3,12 +3,13 @@ pg.init()
 import os, sys
 sys.path.append(os.path.join(os.getcwd(), "modules"))
 sys.path.append(os.path.join(os.getcwd(), "python_pictures"))
-import randGameHub
 from GUI_elements import*
 import clr
+import paint
 import tictactoe
 import flappy_bird
 import dinorun
+import randGameHub
 textCol = clr.white
 screenCol = clr.black
 
@@ -27,6 +28,8 @@ def mainLoop():
     white_background = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "white_background.png"))
     randGameImage = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "randGame.png"))
     randGameImage_hovour =pg.image.load(os.path.join(os.getcwd(), "python_pictures", "randGame_hovour.png"))
+    paintImg = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "paint_icon.png"))
+    paintImg_hovour =pg.image.load(os.path.join(os.getcwd(), "python_pictures", "paint_icon_hov.png"))
     tictactoe_image = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "tictactoe.png"))
     tictactoe_hovour = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "tictactoe_hovour.png"))
     flappybird_img = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "bird_icon.png"))
@@ -35,6 +38,7 @@ def mainLoop():
     dinorun_img_hov = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "dino_icon_hover.png"))
 
     randCircle = Button(50, 50, 200, 200, 'Circle Game', randGameImage, randGameImage_hovour, textColour = clr.white)
+    paint_button = Button(50, 325, 200, 200, '', paintImg, paintImg_hovour, textColour = clr.white)
     tictactoe_button = Button(320, 50, 200, 200, 'Tic-Tac-Toe', tictactoe_image, tictactoe_hovour)
     flappybird = Button(590, 50, 200, 200, 'Flappy Bird', flappybird_img, flappybird_hov)
     dino_run = Button(860, 50, 200, 200, 'Dino run', dinorun_img, dinorun_img_hov)
@@ -49,6 +53,7 @@ def mainLoop():
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
                     Quit()
+        
         if randCircle.get_click():
             temp = screenCol
             screenCol, textCol, speed, size = randGameHub.difficultyChoice(screenCol, textCol)
@@ -62,6 +67,9 @@ def mainLoop():
                     background = white_background
                     exit_button.textColour = textCol
 
+        elif paint_button.get_click():
+            paint.mainLoop(screenCol, textCol)
+
         elif tictactoe_button.get_click():
             temp = screenCol
             screenCol, textCol = tictactoe.mainLoop(screenCol, textCol)
@@ -74,9 +82,17 @@ def mainLoop():
                     exit_button.textColour = textCol
 
         elif flappybird.get_click():
-            Bool = True
-            while Bool:
-                Bool = flappy_bird.mainLoop()
+            temp = screenCol
+            replay, screenCol, textCol = flappy_bird.mainLoop(screenCol, textCol)
+            while replay:
+                replay, screenCol, textCol = flappy_bird.mainLoop(screenCol, textCol)
+            if temp != screenCol:
+                if screenCol == clr.black:
+                    background = black_background
+                    exit_button.textColour = textCol
+                else:
+                    background = white_background
+                    exit_button.textColour = textCol
 
         elif dino_run.get_click():
             temp = screenCol
@@ -110,6 +126,8 @@ def mainLoop():
 
         if randCircle.onButton():
             text(screen, 30, 585, 30, "Circle Game: Click on the red circle to win the game!", textCol)
+        elif paint_button.onButton():
+            text(screen, 30, 585, 30, "Paint: Feel free to draw anything.", textCol)
         elif tictactoe_button.onButton():
             text(screen, 30, 585, 30, "Tic-Tac-Toe: Classic game where you need to get 3 in a row. With 2-player and 1 player.", textCol)
         elif flappybird.onButton():
@@ -123,6 +141,7 @@ def mainLoop():
             moon(screen)
         
         randCircle.show(screen)
+        paint_button.show(screen)
         tictactoe_button.show(screen)
         flappybird.show(screen)
         exit_button.show(screen)

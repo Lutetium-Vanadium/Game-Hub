@@ -23,9 +23,9 @@ class Dino():
         else:
             image = self.img_light
         screen.blit(image, self.pos)
-    def move(self, a = -1.5):
+    def move(self, a = -2.2):
         if self.locked:
-        	a = -1.5
+        	a = -2.2
         self.v -= a
         self.pos[1] += int(self.v)
         if self.pos[1] > 450:
@@ -73,25 +73,6 @@ class Bush():
         temp = self.rect.colliderect(dino.rect)
         return temp
 
-def lose(screen, screenCenter, score):
-    surf = pg.Surface((400, 200))
-    surf.fill(clr.light_light_gray)
-    surfRect = surf.get_rect()
-    surfRect.center = screenCenter
-    text(surf, 0, 0, 30, ("Your Score is: "+str(score)), clr.black, (200, 30))
-    text(surf, 0, 0, 30, "Crashed!", clr.black, (200, 70))
-    new = Button(30, 125, 140, 50, 'new game', textHeight = 30, outline = True)
-    home = Button(230, 125, 140, 50, 'home', textHeight = 30, outline = True)
-    new.show(surf, surfRect.topleft)
-    home.show(surf, surfRect.topleft)
-    pg.draw.line(surf, clr.black,(0,0), (0,200))
-    pg.draw.line(surf, clr.black, (0,199), (399,199))
-    pg.draw.line(surf, clr.black, (399,199), (399,0))
-    pg.draw.line(surf, clr.black, (400,0), (0,0))
-
-    screen.blit(surf, surfRect.topleft)
-    return new, home, surfRect.topleft
-
 def mainLoop(screenCol, textCol):
     screenWd, screenHt = 1120, 630
     screen = pg.display.set_mode((screenWd, screenHt))
@@ -99,8 +80,10 @@ def mainLoop(screenCol, textCol):
     clock = pg.time.Clock()
     count = 0
     score = 0
-    FPS = 25
+    FPS = 20
     alive = True
+    center = (screenWd //2, 100)
+    paused = False
 
     img_light_small = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "img_s_light.png"))
     img_light_large = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "img_d_light.png"))
@@ -129,22 +112,16 @@ def mainLoop(screenCol, textCol):
                 if event.key == pg.K_ESCAPE:
                     Quit()
                 if event.key == pg.K_SPACE:
-                	if alive:
-                		dino.move(25)
-                	else:
-                		return True, screenCol, textCol
-                elif event.key == pg.K_p:
-                	center = screenWd //2
-                	text(screen, 0, 0, 50, "Paused", textCol, (center, 100 ))
-                	pg.display.update() 
-                	paused = True
-                	while paused:
-						for event in pg.event.get():
-				            if event.type == pg.QUIT:
-				                paused = False
-				            if event.type == pg.KEYDOWN:
-				                if event.key == pg.K_ESCAPE or event.key == pg.K_p or event.key == pg.K_SPACE:
-				                    paused = False
+                    if paused:
+                        paused = False
+                    else:
+                        dino.move(30)
+                elif event.key == pg.K_p and alive:
+                    if paused:
+                        paused = False
+                    else:
+                    	text(screen, 0, 0, 50, "Paused", textCol, center)
+                    	paused = True
 
         if butt_mode.get_click():
             if screenCol == clr.black:
@@ -157,12 +134,14 @@ def mainLoop(screenCol, textCol):
         screen.fill(screenCol)
 
         for bush in bush_list:
-            if alive:
+            if alive and paused == False:
                 bush.move()
             bush.show(screen, screenCol)
             if bush.crash(dino):
                 alive = False
                 new, home, origin = lose(screen, screenCenter, score)
+            if score % 20 == 0:
+                bush.speed += 0.1
 
         if alive == False:
             new, home, origin = lose(screen, screenCenter, score)
@@ -173,12 +152,12 @@ def mainLoop(screenCol, textCol):
 
         dino.show(screen, screenCol)
 
-        if count%FPS == 0 and alive:
+        if count%(FPS//4) == 0 and alive and paused == False:
                 score += 1
 
         text(screen, screenWd - 100, 5, 30, str(score), textCol)
         
-        if alive:
+        if alive and paused == False:
         	dino.move()
 
         if screenCol == clr.black:
@@ -187,10 +166,14 @@ def mainLoop(screenCol, textCol):
         else:
         	col = gray1
         	moon(screen)
-        pg.draw.line(screen, col, (0, 585), (1120, 585), 4)
 
+        if paused:
+            text(screen, 0, 0, 50, "Paused", textCol, center)
+        else:
+            count += 1
+
+        pg.draw.line(screen, col, (0, 585), (1120, 585), 4)
         pg.display.update()
-        count += 1
         clock.tick(FPS)
 
 

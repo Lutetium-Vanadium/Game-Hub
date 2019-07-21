@@ -2,7 +2,7 @@ import pygame as pg
 pg.init()
 from GUI_elements import*
 import clr, traceback
-from random import choice
+from random import choice, randint
 
 ##############################################################################################################################################################################################
 
@@ -55,10 +55,8 @@ class Grid():
         #print(self.box_used)
         screen.blit(surf, ((self.rectlist[i][0] + surfsize//2), (self.rectlist[i][1] + surfsize//2)))
 
-#[[(245, 0), (245, 210), (245, 420)], [(455, 0), (455, 210), (455, 420)], [(665, 0), (665, 210), (665, 420)]]
 
-
-def ai(boxes):
+def ai(boxes, hardness):
     #winning
     for i in range(0, 9, 3):
         if boxes[i] == boxes[i + 1] == 2 and boxes[i + 2] == False:
@@ -133,6 +131,31 @@ def ai(boxes):
     for i in [0, 2, 6, 8]:
         if boxes[i] == False:
             corner_list.append(i)
+
+    rand = randint(0, 99)
+    rand %= 2
+
+    print(hardness, rand)
+    if (hardness == 2 and rand == 1) or hardness == 3:
+        if ((boxes[1] == boxes[6] == 1) or (boxes[2] == boxes[3] == 1)) and boxes[0] == False:
+            return 0
+        if ((boxes[0] == boxes[5] == 1) or (boxes[1] == boxes[8] == 1)) and boxes[2] == False:
+            return 2
+        if ((boxes[0] == boxes[7] == 1) or (boxes[5] == boxes[8] == 1)) and boxes[6] == False:
+            return 6
+        if ((boxes[2] == boxes[7] == 1) or (boxes[5] == boxes[6] == 1)) and boxes[8] == False:
+            return 8
+
+    if (hardness == 2 and rand == 0) or hardness == 3:
+        if (boxes[1] == boxes[3] == 1) and boxes[0] == False:
+            return 0
+        if (boxes[1] == boxes[5] == 1) and boxes[2] == False:
+            return 2
+        if (boxes[3] == boxes[7] == 1) and boxes[6] == False:
+            return 6
+        if (boxes[5] == boxes[7] == 1) and boxes[8] == False:
+            return 8
+
     if boxes[4] != 1:
         if len(edge_list):
             return choice(edge_list)
@@ -143,8 +166,7 @@ def ai(boxes):
             return choice(corner_list)
         if len(corner_list):
             return choice(edge_list)
-    
-        
+
     
 def new(grid, screen, screenCol, turn):
     for i in range(len(grid.box_used)):
@@ -161,7 +183,8 @@ def mainLoop(screenCol, textCol):
     clock = pg.time.Clock()
     FPS = 25
     turn = 0
-    current_mode = 2
+    current_mode = 1
+    difficulty = 2
     won = False
     screenCenter = (screenWd//2, screenHt//2)
     grid = Grid(screenHt, 245, col = textCol)
@@ -171,6 +194,11 @@ def mainLoop(screenCol, textCol):
     butt_mainMenu = Button(940, 600, 100, 30, "Main Menu", textHeight = 30, textColour = textCol, opaque = False)
     play2_butt = Button(50, 200, 150, 100, "2 player", textColour = textCol)
     play1_butt = Button(50, 400, 150, 100, "1 player", textColour = textCol)
+    easy = Button(60, 550, 40, 40, 'easy', textHeight = 15, textColour = textCol, value = 1, enabled_selected = True, outline = True)
+    medium = Button(110, 550, 40, 40, 'medium', textHeight = 15, textColour = textCol, value = 2, enabled_selected = True, outline = True)
+    hard = Button(160, 550, 40, 40, 'hard', textHeight = 15, textColour = textCol, value = 3, enabled_selected = True, outline = True)
+
+    diff_list = [easy, medium, hard]
     #print(grid.boxlist)
     #print(grid.rectlist)i]
     
@@ -186,8 +214,11 @@ def mainLoop(screenCol, textCol):
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
                     Quit()
+                if event.key == pg.K_n:
+                    turn = new(grid, screen, screenCol, turn)
+                    won = False
                 for i in range(len(key_check)):
-                    if event.key == key_check[i] and not grid.box_used[i]:
+                    if event.key == key_check[i] and grid.box_used[i] == False:
                         grid.mark(i, turn, screen, screenCol)
                         if turn%2 == 0:
                             grid.box_used[i] = 1
@@ -250,10 +281,21 @@ def mainLoop(screenCol, textCol):
         text(screen, 100, 340, 20, (str(current_mode)+" Player"), textCol)
 
         if turn%2 == 1 and current_mode == 1 and turn <=7 and won == False:
-            move = ai(grid.box_used)
+            move = ai(grid.box_used, difficulty)
             grid.mark(move, turn, screen, screenCol)
             grid.box_used[move] = 2
             turn += 1
+
+        if current_mode == 1:
+            for diff in diff_list:
+                diff.show(screen)
+                if diff.value == difficulty:
+                    diff.selected = True
+                else:
+                    diff.selected = False
+                if diff.get_click():
+                    turn = new(grid, screen, screenCol, turn)
+                    difficulty = diff.value
 
         if screenCol == clr.black:
             sun(screen)

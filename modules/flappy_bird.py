@@ -99,32 +99,13 @@ def cloud(screen, x, y, r=20):
     pg.draw.circle(screen, clr.white, ((x+r), (y+r)), r)
     pg.draw.rect(screen, clr.sky, (x-3*r, y+r, 8*r, r))    
 
-def sky(screen):
+def day_sky(screen):
     screen.fill(clr.sky)
     cloud(screen, 220, 150)
     cloud(screen, 947, 324)
     cloud(screen, 670, 500)
-
-def lose(screen, screenCenter, score):
-    surf = pg.Surface((400, 200))
-    surf.fill(clr.white)
-    surfRect = surf.get_rect()
-    surfRect.center = screenCenter
-    text(surf, 0, 0, 30, ("Your Score is: "+str(score)), clr.black, (200, 30))
-    text(surf, 0, 0, 30, "Crashed!", clr.black, (200, 70))
-    new = Button(30, 125, 140, 50, 'new game', textHeight = 30, outline = True)
-    home = Button(230, 125, 140, 50, 'home', textHeight = 30, outline = True)
-    new.show(surf, surfRect.topleft)
-    home.show(surf, surfRect.topleft)
-    pg.draw.line(surf, clr.black,(0,0), (0,200))
-    pg.draw.line(surf, clr.black, (0,199), (399,199))
-    pg.draw.line(surf, clr.black, (399,199), (399,0))
-    pg.draw.line(surf, clr.black, (400,0), (0,0))
-
-    screen.blit(surf, surfRect.topleft)
-    return new, home, surfRect.topleft
     
-def mainLoop():
+def mainLoop(screencol, textcol):
     pg.display.set_caption('Flappy Bird')
     
     screenWd, screenHt = 1120, 630
@@ -137,6 +118,9 @@ def mainLoop():
     count = 0
     temp = 0
     block = 3
+    paused = False
+    center = (screenWd //2, 100)
+    star_pos = [(randint(0, screenWd), randint(0, screenHt)) for i in range(10)]
 
     randintlist = [(randint(1, block-1) * screenHt//block) for i in range(5)]
     randintlist[0] = block//2 *screenHt//block
@@ -155,6 +139,8 @@ def mainLoop():
     top_pipe5 = Pipe(1700, 0, True, randintlist[4])
     bot_pipe5 = Pipe(1700, (randintlist[4] + screenHt//block), False, (screenHt - (randintlist[4] + screenHt//block)))
 
+    butt_mode = Button(1075, 15, 20, 20)
+
     bird = Bird(50, 200, pic_up, pic_down)
 
     pipe_list = [top_pipe1, top_pipe2, top_pipe3, top_pipe4, top_pipe5,
@@ -168,51 +154,67 @@ def mainLoop():
                 if event.key == pg.K_ESCAPE:
                     Quit()
                 if event.key == pg.K_SPACE and alive:
-                    bird.move(count, -25)
-                elif event.key == pg.K_p:
-                    center = (screenWd //2, 100)
-                    text(screen, 0, 0, 50, "Paused", clr.black, center)
-                    pg.display.update() 
-                    paused = True
-                    while paused:
-                        for event in pg.event.get():
-                            if event.type == pg.QUIT:
-                                paused = False
-                            if event.type == pg.KEYDOWN:
-                                if event.key == pg.K_ESCAPE or event.key == pg.K_p or event.key == pg.K_SPACE:
-                                    paused = False
+                    if paused:
+                        paused = False
+                    else:
+                        bird.move(count, -25)
+                elif event.key == pg.K_p and alive:
+                    if paused:
+                        paused = False
+                    else:
+                        paused = True
+                        text(screen, 0, 0, 50, "Paused", textcol, center)
 
-        screen.fill(clr.sky)
+        if butt_mode.get_click():
+            if screencol == clr.black:
+                screencol = clr.white
+                textcol = clr.black
+            else:
+                screencol = clr.black
+                textcol = clr.white
 
-        
-        sky(screen)
+        if screencol == clr.black:
+            screen.fill(screencol)
+            for star in star_pos:
+                pg.draw.circle(screen, clr.white, star, 3)
+        else:
+            screen.fill(clr.sky)
+            day_sky(screen)
 
-        if alive:
-            if bird.is_dead(screenHt):
-                alive = False
-            bird.move(count)
-
+        if paused:
+            text(screen, 0, 0, 50, "Paused", textcol, center)
+        else:
+            if alive:
+                if bird.is_dead(screenHt):
+                    alive = False
+                bird.move(count)
 
         for i in range(len(pipe_list)):
-            if alive:
+            if alive and paused == False:
                 pipe_list[i].move()
             pipe_list[i].show(screen, screenHt, i, pipe_list, block)
             if pipe_list[i].crash(bird):
                 alive = False
                 new, home, origin = lose(screen, screenCenter, score)
 
+        if screencol == clr.black:
+            sun(screen)
+        else:
+            moon(screen)
+
         if alive == False:
             new, home, origin = lose(screen, screenCenter, score)
             if home.get_click(origin):
-                return False
+                return False, screencol, textcol
             if new.get_click(origin):
-                return True
+                return True, screencol, textcol
                 
-        count += 1
-        if count % 25 == 0 and alive:
+        if paused == False:        
+            count += 1
+        if count % 25 == 0 and alive and paused == False:
             score += 1
 
-        text(screen, screenWd - 70, 5, 30, str(score), clr.black)
+        text(screen, screenWd - 70, 5, 30, str(score), textcol)
 
         bird.show(screen)
 
