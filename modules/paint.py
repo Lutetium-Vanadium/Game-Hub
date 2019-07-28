@@ -13,7 +13,7 @@ class Canvas():
         self.brushcol = brushcol
         self.thick = thickness
         self.e_thick = e_thickness
-        #modes = b for brush, e - eraser, l - line, r - rectangle, c - circel, f - fill and p - colour picker
+        #modes = b for brush, e - eraser, l - line, r - rectangle, c - circle, el for elipse, f - fill and p - colour picker
         self.mode = 'b'
         self.size = (screenWd - pos[0], screenHt - pos[1])
         self.surf = pg.Surface(self.size)
@@ -31,6 +31,7 @@ class Canvas():
         self.tempSurf = None
         self.surflist = [self.surf.copy()]
         self.list_pos = 0
+        self.repeat = False
     def fill(self, pos, screen):
         pos = tuple(pos)
         screencol = screen.get_at(pos)
@@ -76,32 +77,17 @@ class Canvas():
         elif self.mode == 'f':
             self.fill(pos, self.surflist[self.list_pos])
             return
-        elif self.mode == 'l' or self.mode == 'c' or self.mode == 'r':
+        elif self.mode == 'e':
+            col = self.screencol
+        else:
             self.pressed = True
             self.tempSurf = pg.Surface(self.size)
-            self.tempSurf.fill(self.screencol)
-            self.tempSurf.set_colorkey(self.screencol)
-            if self.mode == 'l':
-                pg.draw.line(self.tempSurf, self.brushcol, self.prev_pos, pos, self.thick)
-            elif self.mode == 'c':
-                circ_center = ((pos[0] + self.prev_pos[0])//2, (pos[1] + self.prev_pos[1])//2)
-                r = int(((pos[0] - circ_center[0])**2 + (pos[1]- circ_center[1])**2)**0.5)
-                if self.thick > r:
-                    thickness = 0
-                else:
-                    thickness = self.thick
-                pg.draw.circle(self.tempSurf, self.brushcol, circ_center, r, thickness)
-            elif self.mode == 'r':
-                wd_ht = (pos[0] - self.prev_pos[0], pos[1]- self.prev_pos[1])
-                if wd_ht[0] > self.thick and wd_ht[1] > self.thick:
-                    thickness = self.thick
-                else:
-                    thickness = 0
-                drawing_rect = pg.Rect(self.prev_pos, wd_ht)
-                pg.draw.rect(self.tempSurf, self.brushcol, drawing_rect, thickness)
+            if self.repeat:
+                surf = self.surflist[self.list_pos]
+            else:
+                surf = self.tempSurf
+            shape_draw(self, pos, surf)
             return
-        else:
-            col = self.screencol
 
         pg.draw.line(self.surflist[self.list_pos], col, self.prev_pos, pos, thick)
         self.prev_pos = pos
@@ -131,7 +117,7 @@ class Canvas():
         self.surflist[self.list_pos].blit(temp_surf, (0,0))
 
 class Slider():
-    def __init__(self, pos, screen_pos, col , current_rgb_val, height = 20, width = 265):
+    def __init__(self, pos, screen_pos, col , current_rgb_val, value, height = 20, width = 265):
         self.pos = pos
         self.col = col
         self.ht = height
@@ -142,6 +128,7 @@ class Slider():
         self.surfRect[1] = screen_pos[1]
         self.screen_pos = screen_pos
         self.cursor = Button(current_rgb_val, (height//2 - 10), 5, 10, hovour = True)
+        self.value = value
     def show(self, screen):
         self.surf.fill(light_gray)
         pg.draw.line(self.surf, self.col, (5, self.ht//2), (self.wd-10, self.ht//2), 3)
@@ -151,10 +138,55 @@ class Slider():
         mpos = pg.mouse.get_pos()
         if self.surfRect.collidepoint(mpos) and pg.mouse.get_pressed()[0]:
             self.cursor.rect.center = (mpos[0]-self.screen_pos[0],self.ht//2)
-            return mpos[0]-self.screen_pos[0]
-        return prev_col
+            return mpos[0]-self.screen_pos[0], True
+        return prev_col, False
 
 ###########################################################################################################################################################
+def shape_draw(canvas, pos, surf):
+    if canvas.tempSurf != None:
+        canvas.tempSurf.fill(canvas.screencol)
+        canvas.tempSurf.set_colorkey(canvas.screencol)
+    if canvas.mode == 'l':
+        pg.draw.line(surf, canvas.brushcol, canvas.prev_pos, pos, canvas.thick)
+    elif canvas.mode == 'r' or canvas.mode == 'el':
+        if pos[0] > canvas.prev_pos[0]:
+            wd = pos[0] - canvas.prev_pos[0]
+        else:
+            wd = canvas.prev_pos[0] - pos[0]
+        if pos[1] > canvas.prev_pos[1]:
+            ht = pos[1] - canvas.prev_pos[1]
+        else:
+            ht = canvas.prev_pos[1] - pos[1]
+        drawing_rect = pg.Rect(canvas.prev_pos, (wd,ht))
+        if pos[0] < canvas.prev_pos[0] and pos[1] < canvas.prev_pos[1]:
+            drawing_rect.topleft = pos
+        elif pos[0] < canvas.prev_pos[0] and pos[1] > canvas.prev_pos[1]:
+            drawing_rect.bottomleft = pos
+        elif pos[0] > canvas.prev_pos[0] and pos[1] < canvas.prev_pos[1]:
+            drawing_rect.topright = pos
+        if canvas.mode == 'r':
+            if wd > canvas.thick or ht > canvas.thick:
+                thickness = canvas.thick
+            else:
+                thickness = 0
+        if canvas.mode == 'el':
+            if wd//2 > canvas.thick and ht//2 > canvas.thick:
+                thickness = canvas.thick
+            else:
+                thickness = 0
+        if canvas.mode == 'r':
+            pg.draw.rect(surf, canvas.brushcol, drawing_rect, thickness)
+        else:
+            pg.draw.ellipse(surf, canvas.brushcol, drawing_rect, thickness)
+    elif canvas.mode == 'c':
+        circ_center = ((pos[0] + canvas.prev_pos[0])//2, (pos[1] + canvas.prev_pos[1])//2)
+        r = int(((pos[0] - circ_center[0])**2 + (pos[1]- circ_center[1])**2)**0.5)
+        if canvas.thick > r:
+            thickness = 0
+        else:
+            thickness = canvas.thick
+        pg.draw.circle(surf, canvas.brushcol, circ_center, r, thickness)
+
 def active(button, mode = True):
     button.activated = mode
     if mode:
@@ -178,11 +210,12 @@ def rgb_col(screen, canvas, rgb_val, pos):
     while len(rgb_val) > 3:
         rgb_val.pop()
 
-    red_slider = Slider((5, 15), (pos[0]+5, pos[1]+15), red, rgb_val[0])
-    green_slider = Slider((5, 40), (pos[0]+5, pos[1]+40), green, rgb_val[1])
-    blue_slider =Slider((5, 65), (pos[0]+5, pos[1]+65), blue, rgb_val[2])
+    red_slider = Slider((5, 15), (pos[0]+5, pos[1]+15), red, rgb_val[0], 0)
+    green_slider = Slider((5, 40), (pos[0]+5, pos[1]+40), green, rgb_val[1], 1)
+    blue_slider =Slider((5, 65), (pos[0]+5, pos[1]+65), blue, rgb_val[2], 2)
 
     slider_list = [red_slider, green_slider, blue_slider]
+    last_clicked = 0
 
     while True:
         for event in pg.event.get():
@@ -193,6 +226,18 @@ def rgb_col(screen, canvas, rgb_val, pos):
                     return
                 if event.key == pg.K_RETURN:
                     return rgb_val
+
+        keystate = pg.key.get_pressed()
+        if keystate[pg.K_LEFT]:
+            temp_pos = list(slider_list[last_clicked].cursor.rect.center)
+            temp_pos [0] -= 1
+            slider_list[last_clicked].cursor.rect.center = temp_pos
+            rgb_val[last_clicked] = slider_list[last_clicked].cursor.rect.center[0]
+        if keystate[pg.K_RIGHT]:
+            temp_pos = list(slider_list[last_clicked].cursor.rect.center)
+            temp_pos [0] += 1
+            slider_list[last_clicked].cursor.rect.center = temp_pos
+            rgb_val[last_clicked] = slider_list[last_clicked].cursor.rect.center[0]
 
         dark_count = 0
         for i in rgb_val:
@@ -205,7 +250,10 @@ def rgb_col(screen, canvas, rgb_val, pos):
 
         for i in range(len(slider_list)):
             slider_list[i].show(surf)
-            rgb_val[i] = slider_list[i].move(rgb_val[i])
+            rgb_val[i], clicked = slider_list[i].move(rgb_val[i])
+            if clicked:
+                last_clicked = slider_list[i].value
+
         current_rgb_text.text = str(rgb_val)
         for i in range(3):
             if rgb_val[i] > 255:
@@ -245,7 +293,7 @@ def colchoice(screen, canvas, canvas_col_button):
     templist[5] = Button(63, 112, 25, 25, colour = green, surfpos = (745, 105), outline = True, hovour = False)
     templist[6] = Button(12, 162, 25, 25, colour = sky, surfpos = (745, 105), outline = True, hovour = False)
     templist[7] = Button(63, 162, 25, 25, colour = blue, surfpos = (745, 105), outline = True, hovour = False)
-    rgb = Button(25, 205, 50, 50, colour = canvas.screencol, text = 'RGB', surfpos = (745, 105), outline = True, hovour = False)
+    rgb = Button(25, 205, 50, 50, 'RGB', textHeight = 30, colour = canvas.screencol, surfpos = (745, 105), outline = True, hovour = False)
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -280,7 +328,7 @@ def colchoice(screen, canvas, canvas_col_button):
 def shape_choice(screen, canvas, surfpos = (975, 105)):
     clock = pg.time.Clock()
     FPS = 20
-    surf = pg.Surface((80, 200))
+    surf = pg.Surface((80, 320))
     count = 0
     surfRect = surf.get_rect()
     surfRect [0], surfRect[1] = surfpos[0], surfpos[1]
@@ -298,12 +346,21 @@ def shape_choice(screen, canvas, surfpos = (975, 105)):
     circ_surf.fill(light_gray)
     pg.draw.circle(circ_surf, canvas.brushcol, (20, 20), 15, 2)
 
+    ellipse_surf = pg.Surface((40, 40))
+    ellipse_surf.fill(light_gray)
+    pg.draw.ellipse(ellipse_surf, canvas.brushcol, (5, 10, 30, 20), 2)
+
 
     line_button = Button(20, 20, 40, 40, img = line_surf, value = 'l', surfpos = surfpos, outline = True, hovour = False)
     rect_button = Button(20, 80, 40, 40, img = rect_surf, value = 'r', surfpos = surfpos, outline = True, hovour = False)
     circ_button = Button(20, 140, 40, 40, img = circ_surf, value = 'c', surfpos = surfpos, outline = True, hovour = False)
+    elps_button = Button(20, 200, 40, 40, img = ellipse_surf, value = 'el', surfpos = surfpos, outline = True, hovour = False)
+    rep_button = Button(20, 260, 40, 40, "repeat", textHeight = 15, colour = light_gray, hovourColour = light_light_gray, surfpos = surfpos, outline = True)
 
-    button_list = [line_button, rect_button, circ_button]
+    button_list = [line_button, rect_button, circ_button, elps_button]
+
+    if canvas.repeat:
+        rep_button.selected = True
 
     while True:
         for event in pg.event.get():
@@ -324,6 +381,16 @@ def shape_choice(screen, canvas, surfpos = (975, 105)):
 
         if pg.mouse.get_pressed()[0] and surfRect.collidepoint(pg.mouse.get_pos()) == False and count > 20:
             return
+
+        if rep_button.get_click():
+            if canvas.repeat:
+                canvas.repeat = False
+                rep_button.selected = False
+            else:
+                canvas.repeat = True
+                rep_button.selected = True
+
+        rep_button.show(surf)
 
         screen.blit(surf, surfpos)
         pg.display.update()
@@ -387,13 +454,16 @@ def toolbar(screen, button_list_col, button_list_mode, button_list_misc, canvas,
                 button.selected = True
                 if canvas.mode == 'e':
                     canvas.mode = 'b'
+                if canvas.brushcol == canvas.screencol:
+                    canvas.mode = 'e'
             if button.selected and canvas.brushcol != button.colour:
                 button.selected = False
             button.show(surf)
     for button in button_list_mode:
             if button.get_click():
                 canvas.mode = button.value
-                button.selected = True
+                if canvas.mode == button.value:
+                    button.selected = True
             if button.selected and canvas.mode != button.value:
                 button.selected = False
             button.show(surf)
@@ -416,15 +486,19 @@ def toolbar(screen, button_list_col, button_list_mode, button_list_misc, canvas,
     screen.blit(surf, pos)
     if button_list_misc[3].get_click():
         colchoice(screen, canvas, button_list_misc[3])
+        if canvas.screencol == canvas.brushcol:
+            canvas.mode = 'e'
     elif button_list_misc[4].get_click():
         brushsize(screen, canvas)
     elif button_list_misc[5].get_click():
         rgb_val = rgb_col(screen, canvas, rgb_val, (492, 105))
         if rgb_val != None:
             canvas.brushcol = pg.Color(rgb_val[0], rgb_val[1], rgb_val[2])
+        if canvas.brushcol == canvas.screencol:
+            canvas.mode = 'e'
     elif button_list_misc[6].get_click():
         shape_choice(screen, canvas)
-        pg.time.wait(200)
+        pg.time.wait(10)
 
 def mainLoop(screencol, brushcol):
     pg.display.set_caption('Paint')
@@ -464,8 +538,8 @@ def mainLoop(screencol, brushcol):
     shapes_surf.fill(light_gray)
     pg.draw.circle(shapes_surf, black, (25, 25), 15, 2)
     shapes_surf_hov = pg.Surface((50, 50))
-    shapes_surf.fill(white)
-    pg.draw.circle(shapes_surf, black, (25, 25), 15, 2)
+    shapes_surf_hov.fill(white)
+    pg.draw.circle(shapes_surf_hov, black, (25, 25), 15, 2)
     
 
     brush_butt = Button(100,25, 50, 50, img = brush, hovourImg = brush_hov, hovour = True, value = 'b', outline = True)
@@ -508,26 +582,7 @@ def mainLoop(screencol, brushcol):
             else:
                 if canvas.pressed == True:
                     pos = (mpos[0], mpos[1] - 100)
-                    if canvas.tempSurf != None:
-                        canvas.tempSurf.fill(canvas.screencol)
-                    if canvas.mode == 'l':
-                        pg.draw.line(canvas.surflist[canvas.list_pos], canvas.brushcol, canvas.prev_pos, pos, canvas.thick)
-                    elif canvas.mode == 'r':
-                        wd_ht = (pos[0] - canvas.prev_pos[0], pos[1]- canvas.prev_pos[1])
-                        if wd_ht[0] > canvas.thick and wd_ht[1] > canvas.thick:
-                            thickness = canvas.thick
-                        else:
-                            thickness = 0
-                        drawing_rect = pg.Rect(canvas.prev_pos, wd_ht)
-                        pg.draw.rect(canvas.surflist[canvas.list_pos], canvas.brushcol, drawing_rect, thickness)
-                    elif canvas.mode == 'c':
-                        circ_center = ((pos[0] + canvas.prev_pos[0])//2, (pos[1] + canvas.prev_pos[1])//2)
-                        r = int(((pos[0] - circ_center[0])**2 + (pos[1]- circ_center[1])**2)**0.5)
-                        if canvas.thick > r:
-                            thickness = 0
-                        else:
-                            thickness = canvas.thick
-                        pg.draw.circle(canvas.surflist[canvas.list_pos], canvas.brushcol, circ_center, r, thickness)
+                    shape_draw(canvas, pos, canvas.surflist[canvas.list_pos])
                 canvas.pressed = False
             pg.mouse.set_visible(False)
         else:
@@ -561,4 +616,4 @@ def mainLoop(screencol, brushcol):
 # except:
 #     traceback.print_exc()
 # finally:
-#     pg.quit()
+#     Quit()

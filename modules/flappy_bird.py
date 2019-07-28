@@ -25,7 +25,7 @@ class Pipe():
     def show(self, screen, screenHt, i, pipe_list, block):
         if self.coord[0] < (-self.size[0]):
             if self.flip:
-                self.size[1] = randint(1, block-1) * screenHt//block
+                self.size[1] = randint(0, block-1) * screenHt//block
             else:
                 self.size[1] = screenHt - (pipe_list[i%(len(pipe_list)//2)].size[1] + screenHt//block)
             self.coord[0] = 1400
@@ -122,7 +122,7 @@ def mainLoop(screencol, textcol):
     center = (screenWd //2, 100)
     star_pos = [(randint(0, screenWd), randint(0, screenHt)) for i in range(10)]
 
-    randintlist = [(randint(1, block-1) * screenHt//block) for i in range(5)]
+    randintlist = [(randint(0, block-1) * screenHt//block) for i in range(5)]
     randintlist[0] = block//2 *screenHt//block
     
     pic_up = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "bird_up.png"))
@@ -152,7 +152,7 @@ def mainLoop(screencol, textcol):
                 Quit()
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
-                    Quit()
+                    return False, screencol, textcol
                 if event.key == pg.K_SPACE and alive:
                     if paused:
                         paused = False
@@ -181,14 +181,6 @@ def mainLoop(screencol, textcol):
             screen.fill(clr.sky)
             day_sky(screen)
 
-        if paused:
-            text(screen, 0, 0, 50, "Paused", textcol, center)
-        else:
-            if alive:
-                if bird.is_dead(screenHt):
-                    alive = False
-                bird.move(count)
-
         for i in range(len(pipe_list)):
             if alive and paused == False:
                 pipe_list[i].move()
@@ -196,6 +188,14 @@ def mainLoop(screencol, textcol):
             if pipe_list[i].crash(bird):
                 alive = False
                 new, home, origin = lose(screen, screenCenter, score)
+
+        if paused:
+            text(screen, 0, 0, 50, "Paused", textcol, center)
+        else:
+            if alive:
+                if bird.is_dead(screenHt):
+                    alive = False
+                bird.move(count)
 
         if screencol == clr.black:
             sun(screen)

@@ -6,8 +6,7 @@ import traceback
 from random import randint
 import sys, os
 
-gray1 = pg.Color(33, 33, 33)
-gray2 = pg.Color(67, 67, 67)
+
 
 class Dino():
     def __init__(self, img_dark = None, img_light = None, size = (147, 150), pos = (50, 450)):
@@ -23,9 +22,9 @@ class Dino():
         else:
             image = self.img_light
         screen.blit(image, self.pos)
-    def move(self, a = -2.2):
+    def move(self, a = -5):
         if self.locked:
-        	a = -2.2
+        	a = -6
         self.v -= a
         self.pos[1] += int(self.v)
         if self.pos[1] > 450:
@@ -53,17 +52,17 @@ class Bush():
                 self.pos[0] = 2150 + rand*50
             rand = randint(0,2)
             if rand == 1:
-            	self.pos[1] = 427
+            	self.pos[1] = 440
             else:
-            	self.pos[1] = 475
+            	self.pos[1] = 490
             self.image_d = self.img_list_dark[rand]
             self.image_l = self.img_list_light[rand]
         if screenCol == clr.black:
         	image = self.image_d
-        	col = gray2
+        	col = clr.dark_gray
         else:
         	image = self.image_l
-        	col = gray1
+        	col = clr.dark_dark_gray
         self.rect[2], self.rect[3] = image.get_rect()[2], image.get_rect()[3]
         screen.blit(image, self.pos)
     def move(self):
@@ -110,12 +109,12 @@ def mainLoop(screenCol, textCol):
                 Quit()
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
-                    Quit()
-                if event.key == pg.K_SPACE:
+                    return False, screenCol, textCol
+                if event.key == pg.K_SPACE and alive:
                     if paused:
                         paused = False
                     else:
-                        dino.move(30)
+                        dino.move(55)
                 elif event.key == pg.K_p and alive:
                     if paused:
                         paused = False
@@ -161,10 +160,10 @@ def mainLoop(screenCol, textCol):
         	dino.move()
 
         if screenCol == clr.black:
-        	col = gray2
+        	col = clr.dark_gray
         	sun(screen)
         else:
-        	col = gray1
+        	col = clr.dark_dark_gray
         	moon(screen)
 
         if paused:

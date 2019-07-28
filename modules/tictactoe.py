@@ -135,7 +135,6 @@ def ai(boxes, hardness):
     rand = randint(0, 99)
     rand %= 2
 
-    print(hardness, rand)
     if (hardness == 2 and rand == 1) or hardness == 3:
         if ((boxes[1] == boxes[6] == 1) or (boxes[2] == boxes[3] == 1)) and boxes[0] == False:
             return 0
@@ -213,7 +212,7 @@ def mainLoop(screenCol, textCol):
                 Quit()
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
-                    Quit()
+                    return screenCol, textCol
                 if event.key == pg.K_n:
                     turn = new(grid, screen, screenCol, turn)
                     won = False

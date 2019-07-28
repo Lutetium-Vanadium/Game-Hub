@@ -48,7 +48,7 @@ def difficultyChoice(screenCol, textCol):
                 Quit()
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
-                    Quit()
+                    return screenCol, textCol, False, None
 
         if buttE.get_click():
             speed = 6
@@ -122,7 +122,7 @@ def mainLoop(screenCol, textCol, speed, size):
                 Quit()
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
-                    Quit()
+                    return screenCol, textCol
             if event.type == pg.MOUSEBUTTONDOWN:
                 if screen.get_at(pg.mouse.get_pos()) == clr.red:
                     text(screen, 0, 0, 79, "Congrats! Clicked!", textCol, screenCenter)

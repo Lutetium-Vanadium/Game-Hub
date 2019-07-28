@@ -60,7 +60,7 @@ class Button():
             thickness = 1
             col = self.textColour
         if self.isSize:
-            pg.draw.line(surface, clr.black, (450, 50), (550, 50))
+            pg.draw.line(surface, clr.black, (450, 50), (550, 50), canvas.thick)
         if self.outline:
             pg.draw.line(surface, col, self.rect.topleft, self.rect.topright, thickness)
             pg.draw.line(surface, col, self.rect.bottomright, self.rect.topright, thickness)
@@ -106,13 +106,13 @@ def text(screen, x , y, size, text, colour = clr.white, center = None):
         x, y = textRect.topleft
     screen.blit(textSurf, (x, y))
 
-def lose(screen, screenCenter, score):
+def lose(screen, screenCenter, score, txt = 'Crashed!'):
     surf = pg.Surface((400, 200))
     surf.fill(clr.light_light_gray)
     surfRect = surf.get_rect()
     surfRect.center = screenCenter
     text(surf, 0, 0, 30, ("Your Score is: "+str(score)), clr.black, (200, 30))
-    text(surf, 0, 0, 30, "Crashed!", clr.black, (200, 70))
+    text(surf, 0, 0, 30, txt, clr.black, (200, 70))
     new = Button(30, 125, 140, 50, 'new game', textHeight = 30, outline = True)
     home = Button(230, 125, 140, 50, 'home', textHeight = 30, outline = True)
     new.show(surf, surfRect.topleft)
@@ -125,19 +125,19 @@ def lose(screen, screenCenter, score):
     screen.blit(surf, surfRect.topleft)
     return new, home, surfRect.topleft
 
-def sun(screen):
-    surf = pg.Surface((200, 200))
+def sun(screen, colour = clr.white, scale = (20, 20), pos = (1075, 15), r1 = 140, r2 = 200):
+    surf = pg.Surface((400, 400))
     surf.fill(clr.black)
     surf.set_colorkey(clr.black)
-    pg.draw.circle(surf, clr.white, (100, 100), 70)
+    pg.draw.circle(surf, colour, (200, 200), r1)
     for i in range(12):
-        start_x = 50 * (math.cos(i*math.pi/6))
-        end_x = 100 * (math.cos(i*math.pi/6))
-        start_y = 50 * (math.sin(i*math.pi/6))
-        end_y = 100 * (math.sin(i*math.pi/6))
-        pg.draw.line(surf, clr.white, ((100 + start_x),(100 + start_y)), ((100 + end_x),(100 + end_y)), 30)
-    surf = pg.transform.smoothscale(surf, (20, 20))
-    screen.blit(surf, (1075, 15))
+        start_x = r1//2 * (math.cos(i*math.pi/6))
+        end_x = r2 * (math.cos(i*math.pi/6))
+        start_y = r1//2 * (math.sin(i*math.pi/6))
+        end_y = r2 * (math.sin(i*math.pi/6))
+        pg.draw.line(surf, colour, ((200 + start_x),(200 + start_y)), ((200 + end_x),(200 + end_y)), 60)
+    surf = pg.transform.smoothscale(surf, scale)
+    screen.blit(surf, pos)
 
 def moon(screen):
     surf = pg.Surface((200, 200))
