@@ -2,7 +2,7 @@ import pygame as pg
 pg.init()
 import math
 import clr
-
+import sys
 
 class Button():
     def __init__(self, x, y, wd, ht, text = '', img = None, hovourImg = None, textHeight = None, textColour = clr.black,
@@ -79,6 +79,7 @@ class Button():
             return temp
         if self.flag and temp == False:
             self.flag = False
+        return False
 
 class Text():
     def __init__(self, x, y,  size, surfsize, text = '', colour = pg.Color("BLACK")):
@@ -96,7 +97,7 @@ class Text():
 '''---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
 def Quit():
     pg.quit()
-    exit()
+    sys.exit()
 
 def text(screen, x , y, size, text, colour = clr.white, center = None):
     textSurf = pg.font.SysFont(pg.font.get_default_font(), size).render(text, True, colour)

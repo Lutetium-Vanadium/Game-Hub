@@ -228,4 +228,4 @@ def mainLoop(screencol, textcol):
 ##except:
 ##    traceback.print_exc()
 ##finally:
-##    pg.quit()
+##    pg.quit

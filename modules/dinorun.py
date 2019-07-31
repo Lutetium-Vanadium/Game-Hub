@@ -9,19 +9,27 @@ import sys, os
 
 
 class Dino():
-    def __init__(self, img_dark = None, img_light = None, size = (147, 150), pos = (50, 450)):
+    def __init__(self, img_dark = None, img_light = None, pos = (50, 450)):
+        size = (img_dark.get_rect()[2], img_dark.get_rect()[3])
         self.img_dark = img_dark
         self.img_light = img_light
         self.rect = pg.Rect(pos, size)
         self.pos = list(pos)
         self.v = 0
         self.locked = False
+        self.surf = pg.Surface((size))
+        self.surf.blit(img_light, (0,0))
+        self.surf.set_colorkey(clr.green_screen)
+        self.mask = pg.mask.from_surface(self.surf)
     def show(self, screen, screenCol):
         if screenCol == clr.black:
             image = self.img_dark
         else:
             image = self.img_light
-        screen.blit(image, self.pos)
+        self.surf.blit(image, (0,0))
+        self.surf.set_colorkey(clr.green_screen)
+        self.mask = pg.mask.from_surface(self.surf)
+        screen.blit(self.surf, self.pos)
     def move(self, a = -5):
         if self.locked:
         	a = -6
@@ -39,12 +47,13 @@ class Dino():
 class Bush():
     def __init__(self, img_list_light, img_list_dark, pos, speed = 20):
         self.pos = list(pos)
-        self.img_list_light = img_list_light	
+        self.img_list_light = img_list_light
         self.img_list_dark = img_list_dark
         self.image_d = None
         self.image_l = None
         self.rect = pg.Rect(pos, (0,0))
         self.speed = speed
+        self.mask = None
     def show(self, screen, screenCol):
         if self.image_d == None or self.pos[0] < -150:
             if self.image_d != None:
@@ -63,14 +72,21 @@ class Bush():
         else:
         	image = self.image_l
         	col = clr.dark_dark_gray
-        self.rect[2], self.rect[3] = image.get_rect()[2], image.get_rect()[3]
-        screen.blit(image, self.pos)
+        size = (image.get_rect()[2], image.get_rect()[3])
+        surf = pg.Surface(size)
+        surf.blit(image, (0,0))
+        surf.set_colorkey(clr.green_screen)
+        self.mask = pg.mask.from_surface(surf)
+        self.rect[2], self.rect[3] = size
+        screen.blit(surf, self.pos)
     def move(self):
         self.pos[0] -= self.speed
         self.rect[0] = self.pos[0]
     def crash(self, dino):
-        temp = self.rect.colliderect(dino.rect)
-        return temp
+        offset_x = dino.rect[0] - self.rect[0]
+        offset_y = dino.rect[1] - self.rect[1]
+        overlap = self.mask.overlap(dino.mask, (offset_x, offset_y))
+        return overlap
 
 def mainLoop(screenCol, textCol):
     screenWd, screenHt = 1120, 630
@@ -155,7 +171,7 @@ def mainLoop(screenCol, textCol):
                 score += 1
 
         text(screen, screenWd - 100, 5, 30, str(score), textCol)
-        
+
         if alive and paused == False:
         	dino.move()
 
