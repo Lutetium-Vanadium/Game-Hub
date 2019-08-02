@@ -504,7 +504,10 @@ def mainLoop(screencol, brushcol):
     pg.display.set_caption('Paint')
     screenWd, screenHt = (1120, 630)
     screen = pg.display.set_mode((screenWd, screenHt))
-    FPS = 60
+    FPS = 50
+    draw_frames = 1000
+    count = 0
+    frames = draw_frames//FPS
     clock = pg.time.Clock()
 
     white_butt = Button(250, 12, 25, 25, colour = white, outline = True, hovour = False)
@@ -589,27 +592,30 @@ def mainLoop(screencol, brushcol):
             canvas.pressed = False
             pg.mouse.set_visible(True)
 
-        screen.fill(screencol)
+        if count % frames == 0:
 
-        canvas.show(screen)
+            screen.fill(screencol)
 
-        if canvas.mode == 'e':
-            rect = pg.Rect(mpos, (canvas.e_thick, canvas.e_thick))
-            rect.center = mpos
-            pg.draw.rect(screen, canvas.screencol, rect)
-            pg.draw.rect(screen, black, rect, 1)
-        elif canvas.mode == 'f':
-            pg.draw.circle(screen, canvas.brushcol, mpos, 2)
-        elif canvas.mode == 'p':
-            pg.draw.circle(screen, screen.get_at(mpos), mpos, 10)
-            pg.draw.circle(screen, black, mpos, 10, 1)
-        else:
-            pg.draw.circle(screen, canvas.brushcol, mpos, canvas.thick//2)
+            canvas.show(screen)
 
-        toolbar(screen, button_list_col, button_list_mode, button_list_misc, canvas)
+            if canvas.mode == 'e':
+                rect = pg.Rect(mpos, (canvas.e_thick, canvas.e_thick))
+                rect.center = mpos
+                pg.draw.rect(screen, canvas.screencol, rect)
+                pg.draw.rect(screen, black, rect, 1)
+            elif canvas.mode == 'f':
+                pg.draw.circle(screen, canvas.brushcol, mpos, 2)
+            elif canvas.mode == 'p':
+                pg.draw.circle(screen, screen.get_at(mpos), mpos, 10)
+                pg.draw.circle(screen, black, mpos, 10, 1)
+            else:
+                pg.draw.circle(screen, canvas.brushcol, mpos, canvas.thick//2)
 
-        pg.display.update()
-        clock.tick(FPS)
+            toolbar(screen, button_list_col, button_list_mode, button_list_misc, canvas)
+            
+            pg.display.update()
+        count += 1
+        clock.tick(draw_frames)
 
 # try:
 #     mainLoop(white, black)
