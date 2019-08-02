@@ -2,7 +2,6 @@ import pygame as pg
 pg.init()
 import math
 import clr
-import sys
 
 class Button():
     def __init__(self, x, y, wd, ht, text = '', img = None, hovourImg = None, textHeight = None, textColour = clr.black,
@@ -82,22 +81,52 @@ class Button():
         return False
 
 class Text():
-    def __init__(self, x, y,  size, surfsize, text = '', colour = pg.Color("BLACK")):
+    def __init__(self, x, y,  size, surfsize, text = '', colour = pg.Color("BLACK"), cursor = False, center = False):
         self.location = [x, y]
         self.size = size
         self.text = text
-        self.colour = colour
+        self.textColour = colour
         self.surf = pg.Surface(surfsize)
         self.rect = self.surf.get_rect()
-    def display(self, screen):
-        textSurf = pg.font.SysFont(pg.font.get_default_font(), self.size).render(self.text, True, self.colour)
+        self.cursor = cursor
+        self.count = 0
+        self.cursor_on = False
+        self.surfsize = surfsize
+        self.center = center
+    def display(self, screen, FPS = 25):
+        textSurf = pg.font.SysFont(pg.font.get_default_font(), self.size).render(self.text, True, self.textColour)
         textRect = textSurf.get_rect()
         textRect.center = self.rect.center
-        screen.blit(textSurf, self.location)
+        self.surf.set_colorkey(clr.green_screen)
+        self.surf.fill(clr.green_screen)
+        if self.center:
+            self.surf.blit(textSurf, textRect.topleft)
+            if self.cursor:
+                if self.count % (FPS//2) == 0:
+                    if self.cursor_on:
+                        self.cursor_on = False
+                    else:
+                        self.cursor_on = True
+                self.count += 1
+                if self.cursor_on:
+                    
+                    start_pos = list(textRect.topright)
+                    start_pos[0] += 3
+                    start_pos[1] -= 3
+                    
+                    end_pos = list(textRect.bottomright)
+                    end_pos[0] += 3
+                    end_pos[1] += 3
+                    
+                    pg.draw.line(self.surf, self.textColour, start_pos, end_pos, 2)
+            surf = self.surf
+        else:
+            surf = textSurf
+        screen.blit(surf, self.location)
 '''---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
 def Quit():
     pg.quit()
-    sys.exit()
+    exit()
 
 def text(screen, x , y, size, text, colour = clr.white, center = None):
     textSurf = pg.font.SysFont(pg.font.get_default_font(), size).render(text, True, colour)

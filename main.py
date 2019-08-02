@@ -10,11 +10,15 @@ import tictactoe
 import flappy_bird
 import dinorun
 import randGameHub
+import minesweeper
 textCol = clr.white
 screenCol = clr.black
+SETTINGS = None
+hub = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "hub.png"))
 
-
-pg.display.set_caption('Hub')
+def backToHub():
+    pg.display.set_caption('Hub')
+    pg.display.set_icon(hub)
 
 ###################################################################################################################################################################################################
 
@@ -36,14 +40,17 @@ def mainLoop():
     flappybird_hov = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "bird_icon_hovour.png"))
     dinorun_img = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "dino_icon.png"))
     dinorun_img_hov = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "dino_icon_hover.png"))
+    mine_icon = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "minesweeper.png"))
+    mine_icon_hov = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "minesweeper_hov.png"))
 
     randCircle = Button(50, 50, 200, 200, 'Circle Game', randGameImage, randGameImage_hovour, textColour = clr.white)
-    paint_button = Button(50, 325, 200, 200, '', paintImg, paintImg_hovour, textColour = clr.white)
     tictactoe_button = Button(320, 50, 200, 200, 'Tic-Tac-Toe', tictactoe_image, tictactoe_hovour)
     flappybird = Button(590, 50, 200, 200, 'Flappy Bird', flappybird_img, flappybird_hov)
     dino_run = Button(860, 50, 200, 200, 'Dino run', dinorun_img, dinorun_img_hov)
+    paint_button = Button(50, 325, 200, 200, '', paintImg, paintImg_hovour)
+    mine_button = Button(320, 325, 200, 200, 'minesweeper', mine_icon, mine_icon_hov, textColour = clr.white)
 
-    exit_button = Button(1050, 600, 50, 30, "Exit", textHeight = 30, textColour = clr.white, opaque = False)
+    exit_button = Button(1050, 600, 50, 30, "Exit", textHeight = 30, textColour = textCol, opaque = False)
     butt_mode = Button(1075, 15, 20, 20)
 
     while True:
@@ -56,6 +63,7 @@ def mainLoop():
 
         if randCircle.get_click():
             temp = screenCol
+            pg.display.set_icon(randGameImage)
             screenCol, textCol, speed, size = randGameHub.difficultyChoice(screenCol, textCol)
             if speed:
                 screenCol, textCol = randGameHub.mainLoop(screenCol, textCol, speed, size)
@@ -66,12 +74,16 @@ def mainLoop():
                 else:
                     background = white_background
                     exit_button.textColour = textCol
+            backToHub()
 
         elif paint_button.get_click():
+            pg.display.set_icon(paintImg)
             paint.mainLoop(screenCol, textCol)
             pg.mouse.set_visible(True)
+            backToHub()
 
         elif tictactoe_button.get_click():
+            pg.display.set_icon(tictactoe_image)
             temp = screenCol
             screenCol, textCol = tictactoe.mainLoop(screenCol, textCol)
             if temp != screenCol:
@@ -81,8 +93,10 @@ def mainLoop():
                 else:
                     background = white_background
                     exit_button.textColour = textCol
+            backToHub()
 
         elif flappybird.get_click():
+            pg.display.set_icon(flappybird_img)
             temp = screenCol
             replay, screenCol, textCol = flappy_bird.mainLoop(screenCol, textCol)
             while replay:
@@ -94,8 +108,10 @@ def mainLoop():
                 else:
                     background = white_background
                     exit_button.textColour = textCol
+            backToHub()
 
         elif dino_run.get_click():
+            pg.display.set_icon(dinorun_img)
             temp = screenCol
             replay, screenCol, textCol = dinorun.mainLoop(screenCol, textCol)
             while replay:
@@ -107,6 +123,27 @@ def mainLoop():
                 else:
                     background = white_background
                     exit_button.textColour = textCol
+            backToHub()
+
+        elif mine_button.get_click():
+            pg.display.set_icon(mine_icon)
+            temp = screenCol
+            n_bombs = 16
+            size = (12, 9)
+            replay = True
+            while replay:
+                replay, screenCol, textCol = minesweeper.mainLoop(screenCol, textCol, size, n_bombs)
+                if replay == SETTINGS:
+                    minesweeper.settings(screenCol, textCol, size, n_bombs)
+            if temp != screenCol:
+                if screenCol == clr.black:
+                    background = black_background
+                    exit_button.textColour = textCol
+                else:
+                    background = white_background
+                    exit_button.textColour = textCol
+            backToHub()
+
 
         elif exit_button.get_click():
             Quit()
@@ -121,8 +158,6 @@ def mainLoop():
                 exit_button.textColour = textCol = clr.white
                 screenCol = clr.black
 
-        pg.display.set_caption('Hub')
-
         screen.blit(background, (0, 0))
 
         if randCircle.onButton():
@@ -135,6 +170,8 @@ def mainLoop():
             text(screen, 30, 585, 30, "Flappy Bird: Classic game where you need to last as long as you can without crashing.", textCol)
         elif dino_run.onButton():
             text(screen, 30, 585, 30, "Dino Run: Classic game where you need to last as long as you can without crashing.", textCol)
+        elif mine_button.onButton():
+            text(screen, 30, 585, 30, "Minesweeper: Win the game by putting flags on every bomb.", textCol)
 
         if screenCol == clr.black:
             sun(screen)
@@ -147,6 +184,7 @@ def mainLoop():
         flappybird.show(screen)
         exit_button.show(screen)
         dino_run.show(screen)
+        mine_button.show(screen)
         pg.display.update()
 
         clock.tick(FPS)
@@ -156,4 +194,5 @@ def mainLoop():
 
 ###################################################################################################################################################################################################
 
+backToHub()
 mainLoop()

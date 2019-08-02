@@ -8,10 +8,12 @@ screenWd, screenHt = 1120, 630
 screenCenter = (screenWd//2, screenHt//2)
 clock = pg.time.Clock()
 BOMB = -1
-FPS = 25
+FPS = 15
 LEFT = 0
 RIGHT = 2
 SETTINGS = None
+WIDTH = 1
+HEIGHT = 2
 
 class Box():
 	def __init__(self, wd, surfpos, x = 0, y = 0, textcol = black, txt = '', outline = True, activated = True, value = None,
@@ -81,11 +83,14 @@ class Grid():
 		self.loc = ((screenWd - (size[0] * self.blocksize) + 100)//2, 0)
 		self.box_list = [[Box(self.blocksize, self.loc, self.blocksize*i, self.blocksize*j, textcol)
 						 for j in range(size[1])] for i in range(size[0])]
-		for i in range(n_bombs+1):
+		for i in range(n_bombs):
 			rand_i = randint(0, self.size[0]-1)
 			rand_j = randint(0, self.size[1]-1)
-			self.box_list[rand_i][rand_j].val = BOMB
-			self.box_list[rand_i][rand_j].txt = 'b'
+			if self.box_list[rand_i][rand_j].val == BOMB:
+				i -= 1
+			else:
+				self.box_list[rand_i][rand_j].val = BOMB
+				self.box_list[rand_i][rand_j].txt = 'b'
 			# self.box_list[rand_i][rand_j].activated = False
 		self.surf = pg.Surface((self.wd, self.ht))
 		self.pressed = [False, False]
@@ -235,16 +240,123 @@ class Grid():
 
 		screen.blit(self.surf, self.loc)
 
-def settings(screencol, textcol):
+def settings(screencol, textcol, size, n_bombs):
+	size_x = 380
 	pg.display.set_caption("Minesweeper - Settings")
 	screen = pg.display.set_mode((screenWd, screenHt))
+	editing = False
+	error = False
+	diff = 1
+	txt = Text(size_x, 550, 50, (500, 100), '', textcol, center = True)
+
+	exit = Button(1050, 600, 50, 30, "Exit", textHeight = 30, textColour = textcol, opaque = False)
+	mode = Button(1075, 15, 20, 20)
+	back = Button(950, 600, 50, 30, "Back", textHeight = 30, textColour = textcol, opaque = False)
+	width = Button(size_x, 100, 500, 200, "Width: " + str(size[0]), textColour = textcol, value = size[0])
+	height = Button(size_x, 350, 500, 200, "Height: " + str(size[1]), textColour = textcol, value = size[1])
+
+	easy = Button(125, 225, 50, 50, "Easy", textHeight = 20, textColour = textcol, value = 1,
+				  enabled_selected = True, outline = True)
+	medm = Button(125, 325, 50, 50, "Medium", textHeight = 20, textColour = textcol, value = 2,
+				  enabled_selected = True, outline = True)
+	hard = Button(125, 425, 50, 50, "Hard", textHeight = 20, textColour = textcol, value = 3,
+				  enabled_selected = True, outline = True)
+
+	easy.selected = True
+
+	nums = {pg.K_1:'1', pg.K_2:'2', pg.K_3:'3', pg.K_4:'4', pg.K_5:'5', pg.K_6:'6', pg.K_7:'7', pg.K_8:'8', pg.K_9:'9', pg.K_0:'0'}
+
+	b_list = [exit, back, width, height, easy, medm, hard]
+	transparent_object_list = [exit, back, txt]
+	bomb_b_list = [easy, medm, hard]
 	while True:
 		for event in pg.event.get():
 			if event.type == pg.QUIT:
 				Quit()
 			if event.type == pg.KEYDOWN:
 				if event.key == pg.K_ESCAPE:
-					Quit() 
+					n_bombs = diff * (width.value + height.value)//2 + 5
+					return (width.value, height.value), n_bombs, screencol, textcol
+				if event.key in nums and txt.cursor:
+					txt.text += nums[event.key]
+				elif event.key == pg.K_BACKSPACE:
+					txt.text = txt.text[:-1]
+				elif event.key == pg.K_RETURN and editing != False:
+					s = txt.text
+					if editing == WIDTH:
+						width.text = "Width: " + s
+						width.value = int(s)
+					else:
+						height.text = "Height: " + s
+						height.value = int(s)
+					txt.location = [size_x, 550]
+					txt.cursor = False
+					txt.text = ''
+					editing = False
+		
+		screen.fill(screencol)
+
+		if exit.get_click():
+			Quit()
+		elif mode.get_click():
+			if screencol == clr.black:
+				screencol = clr.white
+				textcol = clr.black
+			else:
+				screencol = clr.black
+				textcol = clr.white
+			for obj in transparent_object_list:
+				obj.textColour = textcol
+		elif back.get_click():
+			n_bombs = diff * (width.value + height.value)//2 + 5
+			return (width.value, height.value), n_bombs, screencol, textcol
+		elif width.get_click():
+			txt.location = [size_x, 250]
+			i = 0
+			editing = WIDTH
+			txt.text = str(width.value)
+			txt.cursor = True
+			txt.size = 50
+			error = False
+		elif height.get_click():
+			txt.location = [size_x, 450]
+			i = 1
+			editing = HEIGHT
+			txt.text = str(height.value)
+			txt.cursor = True
+			txt.size = 50
+			error = False
+		for button in bomb_b_list:
+			if button.get_click():
+				diff = button.value
+				button.selected = True
+			if button.value != diff:
+				button.selected = False
+
+		if width.value > int(4/3 * height.value):
+			max_width = int(4/3 * height.value)
+			width.value = max_width
+			width.text = "Width: " + str(max_width)
+			error = True
+
+		if screencol == clr.black:
+			sun(screen)
+		else:
+			moon(screen)
+
+		for button in b_list:
+			button.show(screen)
+
+		if error:
+			text(screen, 0, 0, 30, "Error: Aspect ratio is unacceptable", red, (size_x + 250, 590))
+
+		text(screen, 0, 0, 30, "Choose a width and height such that they are at the widest a 4:3 ratio", textcol, (size_x+250, 50))
+		text(screen, 0, 0, 40, "Bombs:", textcol, (180, 100))
+
+		txt.display(screen)
+		
+		pg.display.update()
+		clock.tick(FPS)
 
 def mainLoop(screencol, textcol, size, n_bombs):
 	pg.display.set_caption("Minesweeper")
@@ -258,6 +370,7 @@ def mainLoop(screencol, textcol, size, n_bombs):
 	butt_new = Button(25, 200, 140, 50, 'new game', textHeight = 30, colour = light_gray, hovourColour = light_light_gray, outline = True)
 	butt_home = Button(25, 275, 140, 50, 'home', textHeight = 30, colour = light_gray, hovourColour = light_light_gray, outline = True)
 	settings = Button(25, 550, 140, 50, 'Settings', textHeight = 30, colour = light_gray, hovourColour = light_light_gray, outline = True)
+	exit = Button(1050, 600, 50, 30, "Exit", textHeight = 30, textColour = textcol, opaque = False)
 
 	while True:
 		for event in pg.event.get():
@@ -265,7 +378,7 @@ def mainLoop(screencol, textcol, size, n_bombs):
 				Quit()
 			if event.type == pg.KEYDOWN:
 				if event.key == pg.K_ESCAPE:
-					Quit()
+					return False, screencol, textcol
 				if event.key == pg.K_n:
 					return True, screencol, textcol
 
@@ -276,12 +389,15 @@ def mainLoop(screencol, textcol, size, n_bombs):
 			else:
 				screencol = clr.black
 				textcol = clr.white
+			exit.textColour = textcol
 		elif butt_new.get_click():
 			return True, screencol, textcol
 		elif butt_home.get_click():
 			return False, screencol, textcol
 		elif settings.get_click():
 			return SETTINGS, screencol, textcol
+		elif exit.get_click():
+			Quit()
 
 		if grid.alive == False:
 			col = red
@@ -305,7 +421,7 @@ def mainLoop(screencol, textcol, size, n_bombs):
 		butt_home.show(screen)
 		butt_new.show(screen)
 		settings.show(screen)
-
+		exit.show(screen)
 		pg.display.update()
 
 		count += 1
@@ -315,15 +431,16 @@ def mainLoop(screencol, textcol, size, n_bombs):
 		
 		clock.tick(FPS)
 
-try:
-	size, n_bombs = (9, 9), 10
-	screencol, textcol = black, white
-	replay, screencol, textcol = mainLoop(screencol, textcol, size, n_bombs)
-	while replay:
-		replay, screencol, textcol = mainLoop(screencol, textcol, size, n_bombs)
-		if replay == SETTINGS:
-			size, n_bombs = settings(screencol, textcol)
-except:
-	traceback.print_exc()
-finally:
-	pg.quit()
+# try:
+# 	size, n_bombs = (12, 9), 10
+# 	screencol, textcol = black, white
+# 	replay = True
+# 	while replay:
+# 		replay, screencol, textcol = mainLoop(screencol, textcol, size, n_bombs)
+# 		if replay == SETTINGS:
+# 			size, n_bombs, screencol, textcol = settings(screencol, textcol, size, n_bombs)
+# 			replay = True
+# except:
+# 	traceback.print_exc()
+# finally:
+# 	pg.quit()
