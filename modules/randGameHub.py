@@ -27,7 +27,8 @@ class RandCircle():
 
 '''--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
 
-def difficultyChoice(screenCol, textCol):
+def difficultyChoice(screenCol, textCol, prev_screen, rect_pos):
+    start = True
     pg.display.set_caption('Circle Game')
     Bool = True
     FPS = 25
@@ -45,9 +46,10 @@ def difficultyChoice(screenCol, textCol):
     while Bool:
         for event in pg.event.get():
             if event.type == pg.QUIT:
-                Quit()
+                Quit(screen)
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
+                    fade(screen, True, col = screenCol)
                     return screenCol, textCol, False, None
 
         if buttE.get_click():
@@ -67,7 +69,7 @@ def difficultyChoice(screenCol, textCol):
             size = 5
             Bool = False
         elif butt_exit.get_click():
-            Quit()
+            Quit(screen)
         elif butt_mode.get_click():
             if screenCol == clr.black:
                 screenCol = clr.white
@@ -77,6 +79,7 @@ def difficultyChoice(screenCol, textCol):
                 textCol = clr.white
             butt_mainMenu.textColour = butt_exit.textColour = textCol
         elif butt_mainMenu.get_click():
+            fade(screen, True, col = screenCol)
             return screenCol, textCol, False, None
 
         screen.fill(screenCol)
@@ -101,10 +104,15 @@ def difficultyChoice(screenCol, textCol):
         buttH.show(screen)
         butt_exit.show(screen)
         butt_mainMenu.show(screen)
-        pg.display.update()
+        if start:
+            expand(screen, screen.copy(), [rect_pos[0], rect_pos[1]+90, 200, 113], prev_screen)
+            start = False
+        else:
+            pg.display.update()
 
         clock.tick(FPS)
 
+    fade(screen, True, col = screenCol)
     return screenCol, textCol, speed, size
 
 def mainLoop(screenCol, textCol, speed, size):
@@ -119,15 +127,17 @@ def mainLoop(screenCol, textCol, speed, size):
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT:
-                Quit()
+                Quit(screen)
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
+                    fade(screen, True, col = screenCol)
                     return screenCol, textCol
             if event.type == pg.MOUSEBUTTONDOWN:
                 if screen.get_at(pg.mouse.get_pos()) == clr.red:
                     text(screen, 0, 0, 79, "Congrats! Clicked!", textCol, screenCenter)
                     pg.display.update()
                     pg.time.wait(2500)
+                    fade(screen, True, col = screenCol)
                     return screenCol, textCol
 
         if butt_mode.get_click():

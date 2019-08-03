@@ -220,7 +220,7 @@ def rgb_col(screen, canvas, rgb_val, pos):
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT:
-                Quit()
+                Quit(screen)
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
                     return
@@ -297,8 +297,7 @@ def colchoice(screen, canvas, canvas_col_button):
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT:
-                pg.quit()
-                exit()
+                Quit(screen)
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
                     return
@@ -365,7 +364,7 @@ def shape_choice(screen, canvas, surfpos = (975, 105)):
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT:
-                Quit()
+                Quit(screen)
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
                     return
@@ -412,7 +411,7 @@ def brushsize(screen, canvas):
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT:
-                Quit()
+                Quit(screen)
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
                     return
@@ -500,7 +499,8 @@ def toolbar(screen, button_list_col, button_list_mode, button_list_misc, canvas,
         shape_choice(screen, canvas)
         pg.time.wait(10)
 
-def mainLoop(screencol, brushcol):
+def mainLoop(screencol, brushcol, prev_screen, rect_pos):
+    start = True
     pg.display.set_caption('Paint')
     screenWd, screenHt = (1120, 630)
     screen = pg.display.set_mode((screenWd, screenHt))
@@ -570,9 +570,10 @@ def mainLoop(screencol, brushcol):
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT:
-                Quit()
+                Quit(screen)
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
+                    fade(screen, True, col = screencol)
                     return
 
         mpos = pg.mouse.get_pos()
@@ -613,7 +614,11 @@ def mainLoop(screencol, brushcol):
 
             toolbar(screen, button_list_col, button_list_mode, button_list_misc, canvas)
             
-            pg.display.update()
+            if start:
+                expand(screen, screen.copy(), [rect_pos[0], rect_pos[1]+87, 200, 113], prev_screen)
+                start = False
+            else:
+                pg.display.update()
         count += 1
         clock.tick(draw_frames)
 

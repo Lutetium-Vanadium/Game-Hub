@@ -105,9 +105,9 @@ def day_sky(screen):
     cloud(screen, 947, 324)
     cloud(screen, 670, 500)
     
-def mainLoop(screencol, textcol):
+def mainLoop(screencol, textcol, prev_screen = None, rect_pos = None):
     pg.display.set_caption('Flappy Bird')
-    
+    start = True
     screenWd, screenHt = 1120, 630
     screenCenter = (screenWd//2, screenHt//2)
     screen = pg.display.set_mode((screenWd, screenHt))
@@ -149,9 +149,10 @@ def mainLoop(screencol, textcol):
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT:
-                Quit()
+                Quit(screen)
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
+                    fade(screen, True, col = screencol)
                     return False, screencol, textcol
                 if event.key == pg.K_SPACE and alive:
                     if paused:
@@ -205,6 +206,7 @@ def mainLoop(screencol, textcol):
         if alive == False:
             new, home, origin = lose(screen, screenCenter, score)
             if home.get_click(origin):
+                fade(screen, True, col = screencol)
                 return False, screencol, textcol
             if new.get_click(origin):
                 return True, screencol, textcol
@@ -218,7 +220,11 @@ def mainLoop(screencol, textcol):
 
         bird.show(screen)
 
-        pg.display.update()
+        if start and prev_screen != None:
+            expand(screen, screen.copy(), [rect_pos[0], rect_pos[1]+90, 200, 113], prev_screen)
+            start = False
+        else:
+            pg.display.update()
         clock.tick(FPS)
 
 ##try:

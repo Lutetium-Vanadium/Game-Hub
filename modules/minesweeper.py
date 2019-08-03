@@ -247,6 +247,7 @@ def settings(screencol, textcol, size, n_bombs):
 	editing = False
 	error = False
 	diff = 1
+	start = True
 	txt = Text(size_x, 550, 50, (500, 100), '', textcol, center = True)
 
 	exit = Button(1050, 600, 50, 30, "Exit", textHeight = 30, textColour = textcol, opaque = False)
@@ -272,10 +273,11 @@ def settings(screencol, textcol, size, n_bombs):
 	while True:
 		for event in pg.event.get():
 			if event.type == pg.QUIT:
-				Quit()
+				Quit(screen)
 			if event.type == pg.KEYDOWN:
 				if event.key == pg.K_ESCAPE:
 					n_bombs = diff * (width.value + height.value)//2 + 5
+					fade(screen, True, col = screencol)
 					return (width.value, height.value), n_bombs, screencol, textcol
 				if event.key in nums and txt.cursor:
 					txt.text += nums[event.key]
@@ -297,7 +299,7 @@ def settings(screencol, textcol, size, n_bombs):
 		screen.fill(screencol)
 
 		if exit.get_click():
-			Quit()
+			Quit(screen)
 		elif mode.get_click():
 			if screencol == clr.black:
 				screencol = clr.white
@@ -309,6 +311,7 @@ def settings(screencol, textcol, size, n_bombs):
 				obj.textColour = textcol
 		elif back.get_click():
 			n_bombs = diff * (width.value + height.value)//2 + 5
+			fade(screen, True, col = screencol)
 			return (width.value, height.value), n_bombs, screencol, textcol
 		elif width.get_click():
 			txt.location = [size_x, 250]
@@ -355,14 +358,19 @@ def settings(screencol, textcol, size, n_bombs):
 
 		txt.display(screen)
 		
-		pg.display.update()
+		if start:
+			fade(screen, False)
+			start = False
+		else:
+			pg.display.update()
 		clock.tick(FPS)
 
-def mainLoop(screencol, textcol, size, n_bombs):
+def mainLoop(screencol, textcol, size, n_bombs, prev_screen = None, rect_pos = None, back = True):
 	pg.display.set_caption("Minesweeper")
 	screen = pg.display.set_mode((screenWd, screenHt))
 	count = 0
 	time = 0
+	start = True
 
 	grid = Grid(size, n_bombs, textcol)
 
@@ -375,9 +383,10 @@ def mainLoop(screencol, textcol, size, n_bombs):
 	while True:
 		for event in pg.event.get():
 			if event.type == pg.QUIT:
-				Quit()
+				Quit(screen)
 			if event.type == pg.KEYDOWN:
 				if event.key == pg.K_ESCAPE:
+					fade(screen, True, col = screencol)
 					return False, screencol, textcol
 				if event.key == pg.K_n:
 					return True, screencol, textcol
@@ -393,11 +402,12 @@ def mainLoop(screencol, textcol, size, n_bombs):
 		elif butt_new.get_click():
 			return True, screencol, textcol
 		elif butt_home.get_click():
+			fade(screen, True, col = screencol)
 			return False, screencol, textcol
 		elif settings.get_click():
 			return SETTINGS, screencol, textcol
 		elif exit.get_click():
-			Quit()
+			Quit(screen)
 
 		if grid.alive == False:
 			col = red
@@ -422,7 +432,15 @@ def mainLoop(screencol, textcol, size, n_bombs):
 		butt_new.show(screen)
 		settings.show(screen)
 		exit.show(screen)
-		pg.display.update()
+
+		if back:
+			fade(screen, False)
+			back = False
+		elif start and prev_screen != None:
+			expand(screen, screen.copy(), [rect_pos[0], rect_pos[1]+150, 200, 113], prev_screen)
+			start = False
+		else:
+			pg.display.update()
 
 		count += 1
 

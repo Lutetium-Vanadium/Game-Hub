@@ -2,6 +2,7 @@ import pygame as pg
 pg.init()
 import math
 import clr
+from animations import*
 
 class Button():
     def __init__(self, x, y, wd, ht, text = '', img = None, hovourImg = None, textHeight = None, textColour = clr.black,
@@ -124,7 +125,8 @@ class Text():
             surf = textSurf
         screen.blit(surf, self.location)
 '''---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
-def Quit():
+def Quit(screen):
+    fade(screen, True, 0.5)
     pg.quit()
     exit()
 

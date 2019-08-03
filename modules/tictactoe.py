@@ -175,7 +175,8 @@ def new(grid, screen, screenCol, turn):
     turn = 0
     return turn
 
-def mainLoop(screenCol, textCol):
+def mainLoop(screenCol, textCol, prev_screen, rect_pos):
+    start = True
     pg.display.set_caption('Tic-Tac-Toe')
     screenWd, screenHt = 1120, 630
     screen = pg.display.set_mode((screenWd, screenHt))
@@ -209,9 +210,10 @@ def mainLoop(screenCol, textCol):
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT:
-                Quit()
+                Quit(screen)
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
+                    fade(screen, True, col = screenCol)
                     return screenCol, textCol
                 if event.key == pg.K_n:
                     turn = new(grid, screen, screenCol, turn)
@@ -227,7 +229,7 @@ def mainLoop(screenCol, textCol):
 
 
         if exit_button.get_click():
-            Quit()
+            Quit(screen)
         if new_button.get_click():
             turn = new(grid, screen, screenCol, turn)
             won = False
@@ -245,6 +247,7 @@ def mainLoop(screenCol, textCol):
             butt_mainMenu.textColour = textCol
             grid.col = textCol
         elif butt_mainMenu.get_click():
+            fade(screen, True, col = screenCol)
             return screenCol, textCol
         elif play2_butt.get_click() and current_mode == 1:
             turn = new(grid, screen, screenCol, turn)
@@ -308,7 +311,13 @@ def mainLoop(screenCol, textCol):
         butt_mainMenu.show(screen)
         play2_butt.show(screen)
         play1_butt.show(screen)
-        pg.display.update()
+        
+        if start:
+            expand(screen, screen.copy(), [rect_pos[0], rect_pos[1]+90, 200, 113], prev_screen)
+            start = False
+        else:
+            pg.display.update()
+        
         clock.tick(FPS)
 
 

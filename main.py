@@ -19,36 +19,51 @@ hub = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "hub.png"))
 def backToHub():
     pg.display.set_caption('Hub')
     pg.display.set_icon(hub)
+    return True
 
 ###################################################################################################################################################################################################
 
 def mainLoop():
-    global textCol, screenCol
+    global textCol, screenCol, back
     screenWd, screenHt = 1120, 630
     screen = pg.display.set_mode((screenWd, screenHt))
     clock = pg.time.Clock()
     FPS = 25
+    back = False
+
     background = black_background = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "background.png"))
     white_background = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "white_background.png"))
-    randGameImage = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "randGame.png"))
+    
+    randGameImage_icon = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "randGame.png"))
+    randGameImage = pg.transform.smoothscale(randGameImage_icon, (200, 200))
     randGameImage_hovour =pg.image.load(os.path.join(os.getcwd(), "python_pictures", "randGame_hovour.png"))
-    paintImg = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "paint_icon.png"))
+    
+    paintImg_icon = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "paint_icon.png"))
+    paintImg = pg.transform.smoothscale(paintImg_icon, (200, 200))
     paintImg_hovour =pg.image.load(os.path.join(os.getcwd(), "python_pictures", "paint_icon_hov.png"))
-    tictactoe_image = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "tictactoe.png"))
+    
+    tictactoe_icon = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "tictactoe.png"))
+    tictactoe_image = pg.transform.smoothscale(tictactoe_icon, (200, 200))
     tictactoe_hovour = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "tictactoe_hovour.png"))
-    flappybird_img = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "bird_icon.png"))
+    
+    flappybird_icon = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "bird_icon.png"))
+    flappybird_img = pg.transform.smoothscale(flappybird_icon, (200, 200))
     flappybird_hov = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "bird_icon_hovour.png"))
-    dinorun_img = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "dino_icon.png"))
+    
+    dinorun_icon = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "dino_icon.png"))
+    dinorun_img = pg.transform.smoothscale(dinorun_icon, (200, 200))
     dinorun_img_hov = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "dino_icon_hover.png"))
+    
     mine_icon = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "minesweeper.png"))
-    mine_icon_hov = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "minesweeper_hov.png"))
+    mine_img = pg.transform.smoothscale(mine_icon, (200, 200))
+    mine_img_hov = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "minesweeper_hov.png"))
 
     randCircle = Button(50, 50, 200, 200, 'Circle Game', randGameImage, randGameImage_hovour, textColour = clr.white)
     tictactoe_button = Button(320, 50, 200, 200, 'Tic-Tac-Toe', tictactoe_image, tictactoe_hovour)
     flappybird = Button(590, 50, 200, 200, 'Flappy Bird', flappybird_img, flappybird_hov)
     dino_run = Button(860, 50, 200, 200, 'Dino run', dinorun_img, dinorun_img_hov)
     paint_button = Button(50, 325, 200, 200, '', paintImg, paintImg_hovour)
-    mine_button = Button(320, 325, 200, 200, 'minesweeper', mine_icon, mine_icon_hov, textColour = clr.white)
+    mine_button = Button(320, 325, 200, 200, 'minesweeper', mine_img, mine_img_hov, textColour = clr.white)
 
     exit_button = Button(1050, 600, 50, 30, "Exit", textHeight = 30, textColour = textCol, opaque = False)
     butt_mode = Button(1075, 15, 20, 20)
@@ -56,15 +71,16 @@ def mainLoop():
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT:
-                Quit()
+                Quit(screen)
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
-                    Quit()
-
+                    Quit(screen)
+        
         if randCircle.get_click():
             temp = screenCol
             pg.display.set_icon(randGameImage)
-            screenCol, textCol, speed, size = randGameHub.difficultyChoice(screenCol, textCol)
+            screenCol, textCol, speed, size = randGameHub.difficultyChoice(screenCol, textCol, screen.copy(),
+                                                                            (randCircle.rect[0], randCircle.rect[1]))
             if speed:
                 screenCol, textCol = randGameHub.mainLoop(screenCol, textCol, speed, size)
             if temp != screenCol:
@@ -76,16 +92,11 @@ def mainLoop():
                     exit_button.textColour = textCol
             backToHub()
 
-        elif paint_button.get_click():
-            pg.display.set_icon(paintImg)
-            paint.mainLoop(screenCol, textCol)
-            pg.mouse.set_visible(True)
-            backToHub()
-
         elif tictactoe_button.get_click():
             pg.display.set_icon(tictactoe_image)
             temp = screenCol
-            screenCol, textCol = tictactoe.mainLoop(screenCol, textCol)
+            screenCol, textCol = tictactoe.mainLoop(screenCol, textCol, screen.copy(),
+                                                    (tictactoe_button.rect[0], tictactoe_button.rect[1]))
             if temp != screenCol:
                 if screenCol == clr.black:
                     background = black_background
@@ -98,7 +109,7 @@ def mainLoop():
         elif flappybird.get_click():
             pg.display.set_icon(flappybird_img)
             temp = screenCol
-            replay, screenCol, textCol = flappy_bird.mainLoop(screenCol, textCol)
+            replay, screenCol, textCol = flappy_bird.mainLoop(screenCol, textCol, screen.copy(), (flappybird.rect[0], flappybird.rect[1]))
             while replay:
                 replay, screenCol, textCol = flappy_bird.mainLoop(screenCol, textCol)
             if temp != screenCol:
@@ -113,7 +124,7 @@ def mainLoop():
         elif dino_run.get_click():
             pg.display.set_icon(dinorun_img)
             temp = screenCol
-            replay, screenCol, textCol = dinorun.mainLoop(screenCol, textCol)
+            replay, screenCol, textCol = dinorun.mainLoop(screenCol, textCol, screen.copy(), (dino_run.rect[0], dino_run.rect[1]))
             while replay:
                 replay, screenCol, textCol = dinorun.mainLoop(screenCol, textCol)
             if temp != screenCol:
@@ -125,16 +136,27 @@ def mainLoop():
                     exit_button.textColour = textCol
             backToHub()
 
+        elif paint_button.get_click():
+            pg.display.set_icon(paintImg_icon)
+            paint.mainLoop(screenCol, textCol, screen.copy(), (paint_button.rect[0], paint_button.rect[1]))
+            pg.mouse.set_visible(True)
+            back = backToHub()
+
         elif mine_button.get_click():
             pg.display.set_icon(mine_icon)
             temp = screenCol
             n_bombs = 16
             size = (12, 9)
-            replay = True
+            replay, screenCol, textCol = minesweeper.mainLoop(screenCol, textCol, size, n_bombs, screen.copy(),
+                                                                (mine_button.rect[0], mine_button.rect[1]), False)
+            if replay == SETTINGS:
+                minesweeper.settings(screenCol, textCol, size, n_bombs)
+                replay = True
             while replay:
                 replay, screenCol, textCol = minesweeper.mainLoop(screenCol, textCol, size, n_bombs)
                 if replay == SETTINGS:
                     minesweeper.settings(screenCol, textCol, size, n_bombs)
+                    replay = True
             if temp != screenCol:
                 if screenCol == clr.black:
                     background = black_background
@@ -146,7 +168,7 @@ def mainLoop():
 
 
         elif exit_button.get_click():
-            Quit()
+            Quit(screen)
 
         elif butt_mode.get_click():
             if screenCol == clr.black:
@@ -157,6 +179,9 @@ def mainLoop():
                 background = black_background
                 exit_button.textColour = textCol = clr.white
                 screenCol = clr.black
+
+        elif back:
+            back = False
 
         screen.blit(background, (0, 0))
 
@@ -185,7 +210,11 @@ def mainLoop():
         exit_button.show(screen)
         dino_run.show(screen)
         mine_button.show(screen)
-        pg.display.update()
+
+        if back:
+            fade(screen, False, col = screenCol)
+        else:
+            pg.display.update()
 
         clock.tick(FPS)
 

@@ -88,7 +88,8 @@ class Bush():
         overlap = self.mask.overlap(dino.mask, (offset_x, offset_y))
         return overlap
 
-def mainLoop(screenCol, textCol):
+def mainLoop(screenCol, textCol, prev_screen = None, rect_pos = None):
+    start = True
     screenWd, screenHt = 1120, 630
     screen = pg.display.set_mode((screenWd, screenHt))
     screenCenter = (screenWd//2, screenHt//2)
@@ -122,9 +123,10 @@ def mainLoop(screenCol, textCol):
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT:
-                Quit()
+                Quit(screen)
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
+                    fade(screen, True, col = screenCol)
                     return False, screenCol, textCol
                 if event.key == pg.K_SPACE and alive:
                     if paused:
@@ -161,6 +163,7 @@ def mainLoop(screenCol, textCol):
         if alive == False:
             new, home, origin = lose(screen, screenCenter, score)
             if home.get_click(origin):
+                fade(screen, True, col = screenCol)
                 return False, screenCol, textCol
             if new.get_click(origin):
                 return True, screenCol, textCol
@@ -188,7 +191,11 @@ def mainLoop(screenCol, textCol):
             count += 1
 
         pg.draw.line(screen, col, (0, 585), (1120, 585), 4)
-        pg.display.update()
+        if start and prev_screen != None:
+            expand(screen, screen.copy(), [rect_pos[0], rect_pos[1]+90, 200, 113], prev_screen)
+            start = False
+        else:
+            pg.display.update()
         clock.tick(FPS)
 
 
