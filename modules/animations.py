@@ -1,10 +1,34 @@
 import pygame as pg
 import clr
+from math import sin, pi
+from statistics import mean
 
 screen_size = (1120, 630)
 screen_center = (screen_size[0]//2, screen_size[1]//2)
 clock = pg.time.Clock()
-FPS = 60
+FPS = 100
+
+def easeInOut(time, start, change, total_time):
+    time /= total_time/2
+    if time < 1:
+        return change/2*time*time*time*time + start
+    time -= 2
+    return -change/2 * (time*time*time*time - 2) + start
+
+def sin_curve(dist, iterations):
+    # calculates sin values
+    l = []
+    for i in range(iterations):
+        l.append(sin((i+1)*pi/iterations))
+
+    # average of sines
+    avg = mean(l)
+
+    # average distance travelled by all value
+    avg_iter_dist = dist / avg / iterations
+
+    return l, avg_iter_dist
+
 
 def fade(screen, begin, time = 0.25, col = clr.black):
     if begin:
@@ -25,34 +49,107 @@ def fade(screen, begin, time = 0.25, col = clr.black):
         pg.display.update()
         clock.tick(FPS)
 
-def expand(screen, icon, rect, prev_screen = None, time = 0.3):
+def expand(screen, icon, rect, prev_screen = None, time = 0.5):
     if prev_screen == None:
         prev_screen = screen.copy()
  
     pos = [rect[0], rect[1]]
+    new_pos = pos
+
     size = [rect[2], rect[3]]
+    new_size = size
 
     iterations =  round(FPS * time)
 
-    scale_x = round((screen_size[0] - size[0])/iterations)
-    scale_y = round(scale_x * 9/16)
+    scale_x = screen_size[0] - size[0]
+    scale_y = scale_x * 9/16
 
     pos_diff = (-pos[0], -pos[1])
-    
-    pos_change = (pos_diff[0]//iterations, pos_diff[1]//iterations)
 
     for i in range(iterations):
 
-        # screen.fill(clr.white)
+        new_size[0] = round(easeInOut(i, size[0], scale_x, iterations*3))
+        new_size[1] = round(easeInOut(i, size[1], scale_y, iterations*3))
 
-        size[0] += scale_x
-        size[1] += scale_y
+        blit_icon = pg.transform.smoothscale(icon, new_size)
 
-        blit_icon = pg.transform.smoothscale(icon, size)
-
-        pos[0] += pos_change[0]
-        pos[1] += pos_change[1]
+        new_pos[0] = round(easeInOut(i, pos[0], pos_diff[0], iterations*3))
+        new_pos[1] = round(easeInOut(i, pos[1], pos_diff[1], iterations*3))
         screen.blit(prev_screen, (0,0))
-        screen.blit(blit_icon, pos)
+        screen.blit(blit_icon, new_pos)
         pg.display.update()
         clock.tick(FPS)
+
+# def expand2(screen, icon, rect, prev_screen = None, time = 0.5):
+#     if prev_screen == None:
+#         prev_screen = screen.copy()
+ 
+#     pos = [rect[0], rect[1]]
+#     size = [rect[2], rect[3]]
+
+#     iterations =  round(FPS * time)
+
+#     scale_x = round(screen_size[0] - size[0])
+#     scale_y = round(scale_x * 9/16)
+
+#     pos_diff = (-pos[0], -pos[1])
+    
+#     pos_change = (pos_diff[0]//iterations, pos_diff[1]//iterations)
+
+#     scale_x_l, scale_x_avg = sin_curve(scale_x, iterations)
+#     scale_y_l, scale_y_avg = sin_curve(scale_y, iterations)
+
+#     pos_l = [None, None]
+#     pos_avg = [None, None]
+#     pos_l[0], pos_avg[0] = sin_curve(pos_diff[0], iterations)
+#     pos_l[1], pos_avg[1] = sin_curve(pos_diff[1], iterations)
+
+#     for i in range(iterations):
+
+#         # screen.fill(clr.white)
+
+#         size[0] += round(scale_x_l[i] * scale_x_avg)
+#         size[1] += round(scale_y_l[i] * scale_y_avg)
+
+#         blit_icon = pg.transform.smoothscale(icon, size)
+
+#         pos[0] += round(pos_l[0][i] * pos_avg[0])
+#         pos[1] += round(pos_l[1][i] * pos_avg[1])
+
+#         screen.blit(prev_screen, (0,0))
+#         screen.blit(blit_icon, pos)
+#         pg.display.update()
+#         clock.tick(FPS)
+
+# def expand_og(screen, icon, rect, prev_screen = None, time = 0.5):
+#     if prev_screen == None:
+#         prev_screen = screen.copy()
+ 
+#     pos = [rect[0], rect[1]]
+#     size = [rect[2], rect[3]]
+
+#     iterations =  round(FPS * time)
+
+#     scale_x = round((screen_size[0] - size[0])/iterations)
+#     scale_y = round(scale_x * 9/16)
+
+    
+#     pos_diff = (-pos[0], -pos[1])
+    
+#     pos_change = (pos_diff[0]//iterations, pos_diff[1]//iterations)
+
+#     for i in range(iterations):
+
+#         # screen.fill(clr.white)
+
+#         size[0] += scale_x
+#         size[1] += scale_y
+
+#         blit_icon = pg.transform.smoothscale(icon, size)
+
+#         pos[0] += pos_change[0]
+#         pos[1] += pos_change[1]
+#         screen.blit(prev_screen, (0,0))
+#         screen.blit(blit_icon, pos)
+#         pg.display.update()
+#         clock.tick(FPS)
