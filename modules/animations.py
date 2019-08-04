@@ -10,11 +10,11 @@ def fade(screen, begin, time = 0.25, col = clr.black):
     if begin:
         start = 0
         stop = 256
-        step = int(256/(FPS * time))
+        step = round(256/(FPS * time))
     else:
         start = 256
         stop = 0
-        step = -int(256/(FPS * time))
+        step = -round(256/(FPS * time))
     prev_screen = screen.copy()
     surface = pg.Surface(screen_size)
     surface.fill(col)

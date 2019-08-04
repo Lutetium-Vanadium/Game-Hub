@@ -4,6 +4,7 @@ from GUI_elements import*
 import clr, traceback
 from random import randint
 import sys, os
+from help import*
 
 ################################################################################################################################################################################################
 
@@ -114,6 +115,7 @@ def mainLoop(screencol, textcol, prev_screen = None, rect_pos = None):
     clock = pg.time.Clock()
     FPS = 25
     alive = True
+    play = False
     score = 0
     count = 0
     temp = 0
@@ -157,6 +159,8 @@ def mainLoop(screencol, textcol, prev_screen = None, rect_pos = None):
                 if event.key == pg.K_SPACE and alive:
                     if paused:
                         paused = False
+                    elif play == False:
+                        play = True
                     else:
                         bird.move(count, -25)
                 elif event.key == pg.K_p and alive:
@@ -165,6 +169,20 @@ def mainLoop(screencol, textcol, prev_screen = None, rect_pos = None):
                     else:
                         paused = True
                         text(screen, 0, 0, 50, "Paused", textcol, center)
+                elif event.key == pg.K_n:
+                    return True, screencol, textcol
+                elif event.key == pg.K_h:
+                    if play:
+                        paused = True
+                    fade(screen, True, col = screenCol)
+                    help_screen(FLAPPY_BIRD, screencol, textcol)
+                elif event.key == pg.K_m:
+                    if screencol == clr.black:
+                        screencol = clr.white
+                        textcol = clr.black
+                    else:
+                        screencol = clr.black
+                        textcol = clr.white
 
         if butt_mode.get_click():
             if screencol == clr.black:
@@ -183,7 +201,7 @@ def mainLoop(screencol, textcol, prev_screen = None, rect_pos = None):
             day_sky(screen)
 
         for i in range(len(pipe_list)):
-            if alive and paused == False:
+            if alive and paused == False and play:
                 pipe_list[i].move()
             pipe_list[i].show(screen, screenHt, i, pipe_list, block)
             if pipe_list[i].crash(bird):
@@ -193,7 +211,7 @@ def mainLoop(screencol, textcol, prev_screen = None, rect_pos = None):
         if paused:
             text(screen, 0, 0, 50, "Paused", textcol, center)
         else:
-            if alive:
+            if alive and play:
                 if bird.is_dead(screenHt):
                     alive = False
                 bird.move(count)
@@ -211,14 +229,17 @@ def mainLoop(screencol, textcol, prev_screen = None, rect_pos = None):
             if new.get_click(origin):
                 return True, screencol, textcol
                 
-        if paused == False:        
+        if paused == False and play:        
             count += 1
-        if count % 25 == 0 and alive and paused == False:
+        if count % 25 == 0 and alive and paused == False and play:
             score += 1
 
         text(screen, screenWd - 70, 5, 30, str(score), textcol)
 
         bird.show(screen)
+
+        if play == False:
+            text(screen, 0, 0, 30, "Press space to start", textcol, (560, 250))
 
         if start and prev_screen != None:
             expand(screen, screen.copy(), [rect_pos[0], rect_pos[1]+90, 200, 113], prev_screen)

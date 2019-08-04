@@ -5,34 +5,46 @@ import clr
 import traceback
 from random import randint
 import sys, os
-
+from help import*
 
 
 class Dino():
-    def __init__(self, img_dark = None, img_light = None, pos = (50, 450)):
-        size = (img_dark.get_rect()[2], img_dark.get_rect()[3])
-        self.img_dark = img_dark
-        self.img_light = img_light
+    def __init__(self, img_dark_list, img_light_list, pos = (50, 450)):
+        size = (img_dark_list[0].get_rect()[2], img_dark_list[0].get_rect()[3])
+        self.img_dark_list = img_dark_list
+        self.img_light_list = img_light_list
         self.rect = pg.Rect(pos, size)
         self.pos = list(pos)
         self.v = 0
         self.locked = False
         self.surf = pg.Surface((size))
-        self.surf.blit(img_light, (0,0))
+        self.surf.blit(img_light_list[0], (0,0))
         self.surf.set_colorkey(clr.green_screen)
         self.mask = pg.mask.from_surface(self.surf)
-    def show(self, screen, screenCol):
+        self.image_count = 0
+    def show(self, screen, screenCol, count, alive, paused):
+        if count % 5 == 0 and paused == False:
+            self.image_count += 1
+            self.image_count %= 2
         if screenCol == clr.black:
-            image = self.img_dark
+            image_list = self.img_dark_list
+
         else:
-            image = self.img_light
+            image_list = self.img_light_list
+        if alive:
+            image = image_list[self.image_count]
+        else:
+            image = image_list[2]
+        if self.locked:
+            image = image_list[0]
+        self.surf.fill(clr.green_screen)
         self.surf.blit(image, (0,0))
         self.surf.set_colorkey(clr.green_screen)
         self.mask = pg.mask.from_surface(self.surf)
         screen.blit(self.surf, self.pos)
-    def move(self, a = -5):
+    def move(self, a = -17):
         if self.locked:
-        	a = -6
+        	a = -17
         self.v -= a
         self.pos[1] += int(self.v)
         if self.pos[1] > 450:
@@ -45,7 +57,7 @@ class Dino():
 
 
 class Bush():
-    def __init__(self, img_list_light, img_list_dark, pos, speed = 20):
+    def __init__(self, img_list_light, img_list_dark, pos, speed = 25):
         self.pos = list(pos)
         self.img_list_light = img_list_light
         self.img_list_dark = img_list_dark
@@ -58,7 +70,7 @@ class Bush():
         if self.image_d == None or self.pos[0] < -150:
             if self.image_d != None:
                 rand = randint(-1, 1)
-                self.pos[0] = 2150 + rand*50
+                self.pos[0] = 3200 + rand*50
             rand = randint(0,2)
             if rand == 1:
             	self.pos[1] = 440
@@ -89,33 +101,39 @@ class Bush():
         return overlap
 
 def mainLoop(screenCol, textCol, prev_screen = None, rect_pos = None):
+    pg.display.set_caption("Dino Run")
     start = True
     screenWd, screenHt = 1120, 630
     screen = pg.display.set_mode((screenWd, screenHt))
     screenCenter = (screenWd//2, screenHt//2)
     clock = pg.time.Clock()
-    count = 0
+    count = -1
     score = 0
     FPS = 20
     alive = True
     center = (screenWd //2, 100)
     paused = False
+    play = False
 
     img_light_small = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "img_s_light.png"))
     img_light_large = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "img_d_light.png"))
     img_light_double = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "img_l_light.png"))
     img_light_dino = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "dino_light.png"))
+    img_light_dino2 = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "dino2_light.png"))
+    img_light_dead_dino = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "dino_dead_light.png"))
 
     img_dark_small = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "img_s.png"))
     img_dark_large = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "img_d.png"))
     img_dark_double = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "img_l.png"))
     img_dark_dino = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "dino.png"))
+    img_dark_dino2 = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "dino2.png"))
+    img_dark_dead_dino = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "dino_dead.png"))
 
-    dino = Dino(img_dark_dino, img_light_dino)
+    dino = Dino([img_dark_dino, img_dark_dino2, img_dark_dead_dino], [img_light_dino, img_light_dino2, img_light_dead_dino])
 
     bush1 = Bush([img_light_small, img_light_double, img_light_large], [img_dark_small, img_dark_double ,img_dark_large], (900, 475))
-    bush2 = Bush([img_light_small, img_light_double, img_light_large], [img_dark_small, img_dark_double ,img_dark_large], (1700, 475))
-    bush3 = Bush([img_light_small, img_light_double, img_light_large], [img_dark_small, img_dark_double ,img_dark_large], (2500, 475))
+    bush2 = Bush([img_light_small, img_light_double, img_light_large], [img_dark_small, img_dark_double ,img_dark_large], (2000, 475))
+    bush3 = Bush([img_light_small, img_light_double, img_light_large], [img_dark_small, img_dark_double ,img_dark_large], (3100, 475))
 
     butt_mode = Button(1075, 15, 20, 20)
 
@@ -131,14 +149,29 @@ def mainLoop(screenCol, textCol, prev_screen = None, rect_pos = None):
                 if event.key == pg.K_SPACE and alive:
                     if paused:
                         paused = False
-                    else:
-                        dino.move(55)
+                    elif play == False:
+                        play = True
+                    elif alive:
+                        dino.move(95)
                 elif event.key == pg.K_p and alive:
                     if paused:
                         paused = False
                     else:
-                    	text(screen, 0, 0, 50, "Paused", textCol, center)
                     	paused = True
+                elif event.key == pg.K_h:
+                    if play:
+                        paused = True
+                    fade(screen, True, col = screenCol)
+                    help_screen(DINO_RUN, screenCol, textCol)
+                elif event.key == pg.K_m:
+                    if screenCol == clr.black:
+                        screenCol = clr.white
+                        textCol = clr.black
+                    else:
+                        screenCol = clr.black
+                        textCol = clr.white
+                elif event.key == pg.K_n:
+                    return True, screenCol, textCol
 
         if butt_mode.get_click():
             if screenCol == clr.black:
@@ -150,15 +183,24 @@ def mainLoop(screenCol, textCol, prev_screen = None, rect_pos = None):
 
         screen.fill(screenCol)
 
+        if screenCol == clr.black:
+            col = clr.gray
+            sun(screen)
+        else:
+            col = clr.dark_gray
+            moon(screen)
+
+        pg.draw.line(screen, col, (0, 555), (1120, 555), 4)
+
         for bush in bush_list:
-            if alive and paused == False:
+            if alive and paused == False and play:
                 bush.move()
             bush.show(screen, screenCol)
             if bush.crash(dino):
                 alive = False
                 new, home, origin = lose(screen, screenCenter, score)
-            if score % 20 == 0:
-                bush.speed += 0.1
+            if score % 100 == 0:
+                bush.speed += 1
 
         if alive == False:
             new, home, origin = lose(screen, screenCenter, score)
@@ -168,29 +210,22 @@ def mainLoop(screenCol, textCol, prev_screen = None, rect_pos = None):
             if new.get_click(origin):
                 return True, screenCol, textCol
 
-        dino.show(screen, screenCol)
+        dino.show(screen, screenCol, count, alive, paused)
 
-        if count%(FPS//4) == 0 and alive and paused == False:
+        if count%(FPS//4) == 0 and alive and paused == False and play:
                 score += 1
 
         text(screen, screenWd - 100, 5, 30, str(score), textCol)
 
-        if alive and paused == False:
+        if alive and paused == False and play:
         	dino.move()
-
-        if screenCol == clr.black:
-        	col = clr.dark_gray
-        	sun(screen)
-        else:
-        	col = clr.dark_dark_gray
-        	moon(screen)
-
         if paused:
             text(screen, 0, 0, 50, "Paused", textCol, center)
-        else:
+        elif play:
             count += 1
 
-        pg.draw.line(screen, col, (0, 585), (1120, 585), 4)
+        if play == False:
+            text(screen, 0, 0, 50, "Press space to start", textCol, (560, 250))
         if start and prev_screen != None:
             expand(screen, screen.copy(), [rect_pos[0], rect_pos[1]+90, 200, 113], prev_screen)
             start = False

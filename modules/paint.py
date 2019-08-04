@@ -4,11 +4,16 @@ import sys, os
 import traceback
 from GUI_elements import*
 from clr import*
+from help import*
+
+RGB_TIP = 0
+REPEAT = 1
+ALL = 2
 
 #Classes-------------------------------------------------------------------------------------------------------------
 
 class Canvas():
-    def __init__(self, screencol, brushcol, thickness, e_thickness, screenWd, screenHt, pos, butt_undo, butt_redo):
+    def __init__(self, screencol, brushcol, thickness, e_thickness, screenWd, screenHt, pos, butt_undo, butt_redo, cap = 10):
         self.screencol = screencol
         self.brushcol = brushcol
         self.thick = thickness
@@ -32,6 +37,7 @@ class Canvas():
         self.surflist = [self.surf.copy()]
         self.list_pos = 0
         self.repeat = False
+        self.cap = cap
     def fill(self, pos, screen):
         pos = tuple(pos)
         screencol = screen.get_at(pos)
@@ -62,9 +68,13 @@ class Canvas():
         pos[0], pos[1] = pos[0] - self.pos[0], pos[1] - self.pos[1]
         if self.pressed == False:
             active(self.undo)
+            active(self.redo, False)
             for i in range(self.list_pos, len(self.surflist)-1):
                 self.surflist.pop()
             self.surflist.append(self.surflist[self.list_pos].copy())
+            while len(self.surflist) > self.cap:
+                self.surflist.pop(0)
+                self.list_pos -= 1
             self.list_pos += 1
             self.prev_pos = pos
         if self.mode == 'b':
@@ -127,7 +137,7 @@ class Slider():
         self.surfRect[0] = screen_pos[0]
         self.surfRect[1] = screen_pos[1]
         self.screen_pos = screen_pos
-        self.cursor = Button(current_rgb_val, (height//2 - 10), 5, 10, hovour = True)
+        self.cursor = Button(current_rgb_val, (height//2 - 5), 5, 10, hovour = True)
         self.value = value
     def show(self, screen):
         self.surf.fill(light_gray)
@@ -142,6 +152,24 @@ class Slider():
         return prev_col, False
 
 ###########################################################################################################################################################
+def help_list_maker(num):
+    if num == RGB_TIP:
+        return Tooltip('Change screen colour using rgb sliders', True)
+    elif num == REPEAT:
+        return Tooltip('If enabled, draws every instance of shape detected', True)
+    elif num == ALL:
+        return [Tooltip('New: Click to clear the canvas'),
+                Tooltip('Brush: Basic drawing tool'),
+                Tooltip('Eraser: Erase parts of foreground'),
+                Tooltip('Change the brush size'),
+                Tooltip('Change brush colour using rgb sliders'),
+                Tooltip('Undo'),
+                Tooltip('Redo'),
+                Tooltip('Change the color of the background', True),
+                Tooltip('Colour Picker: pick a colour from the canvas', True),
+                Tooltip('Fill tool: fill enclosed space with one click', True),
+                Tooltip('draw shapes', True)]
+
 def shape_draw(canvas, pos, surf):
     if canvas.tempSurf != None:
         canvas.tempSurf.fill(canvas.screencol)
@@ -191,8 +219,10 @@ def active(button, mode = True):
     button.activated = mode
     if mode:
         button.textColour = black
+        button.alpha = 255
     else:
         button.textColour = red
+        button.aplha = 150
     button.hovour = mode
 
 def rgb_col(screen, canvas, rgb_val, pos):
@@ -226,6 +256,9 @@ def rgb_col(screen, canvas, rgb_val, pos):
                     return
                 if event.key == pg.K_RETURN:
                     return rgb_val
+                if event.key == pg.K_h:
+                    fade(screen, True, col = screenCol)
+                    help_screen(PAINT, screencol, textcol)
 
         keystate = pg.key.get_pressed()
         if keystate[pg.K_LEFT]:
@@ -270,7 +303,7 @@ def rgb_col(screen, canvas, rgb_val, pos):
         count+=1
         clock.tick(FPS)
 
-def colchoice(screen, canvas, canvas_col_button):
+def colchoice(screen, canvas, canvas_col_button, helps):
     rgb_val = list(canvas.screencol)
     clock = pg.time.Clock()
     FPS = 25
@@ -284,33 +317,42 @@ def colchoice(screen, canvas, canvas_col_button):
     while len(rgb_val) > 3:
         rgb_val.pop()
     
-    templist = [i for i in range(8)]
-    templist[0] = Button(12, 12, 25, 25, colour = white,surfpos = (745, 105), outline = True, hovour = False)
-    templist[1] = Button(63, 12, 25, 25, colour = black, surfpos = (745, 105), outline = True, hovour = False)
-    templist[2] = Button(12, 62, 25, 25, colour = red, surfpos = (745, 105), outline = True, hovour = False)
-    templist[3] = Button(63, 62, 25, 25, colour = orange, surfpos = (745, 105), outline = True, hovour = False)
-    templist[4] = Button(12, 112, 25, 25, colour = yellow, surfpos = (745, 105), outline = True, hovour = False)
-    templist[5] = Button(63, 112, 25, 25, colour = green, surfpos = (745, 105), outline = True, hovour = False)
-    templist[6] = Button(12, 162, 25, 25, colour = sky, surfpos = (745, 105), outline = True, hovour = False)
-    templist[7] = Button(63, 162, 25, 25, colour = blue, surfpos = (745, 105), outline = True, hovour = False)
-    rgb = Button(25, 205, 50, 50, 'RGB', textHeight = 30, colour = canvas.screencol, surfpos = (745, 105), outline = True, hovour = False)
+    collist = [i for i in range(8)]
+    collist[0] = Button(12, 12, 25, 25, colour = white,surfpos = (745, 105), outline = True, hovour = False)
+    collist[1] = Button(63, 12, 25, 25, colour = black, surfpos = (745, 105), outline = True, hovour = False)
+    collist[2] = Button(12, 62, 25, 25, colour = red, surfpos = (745, 105), outline = True, hovour = False)
+    collist[3] = Button(63, 62, 25, 25, colour = orange, surfpos = (745, 105), outline = True, hovour = False)
+    collist[4] = Button(12, 112, 25, 25, colour = yellow, surfpos = (745, 105), outline = True, hovour = False)
+    collist[5] = Button(63, 112, 25, 25, colour = green, surfpos = (745, 105), outline = True, hovour = False)
+    collist[6] = Button(12, 162, 25, 25, colour = sky, surfpos = (745, 105), outline = True, hovour = False)
+    collist[7] = Button(63, 162, 25, 25, colour = blue, surfpos = (745, 105), outline = True, hovour = False)
+    rgb = Button(25, 205, 50, 50, 'RGB', textHeight = 30, colour = canvas.screencol, surfpos = (745, 105),
+                 outline = True, hovour = False, help_tip = help_list_maker(RGB_TIP))
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 Quit(screen)
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
-                    return
-        for button in templist:
+                    return helps
+                if event.key == pg.K_h:
+                    fade(screen, True, col = screenCol)
+                    help_screen(PAINT, screencol, textcol)
+                elif event.key == pg.K_x:
+                    if helps:
+                        helps = False
+                    else:
+                        helps = True
+        for button in collist:
             if button.get_click():
                 canvas.prev_screencol = canvas.screencol
                 canvas.screencol = button.colour
                 canvas.new_col(screen)
                 canvas_col_button.colour = button.colour
-                return
+                return helps
             button.show(surf)
         if pg.mouse.get_pressed()[0] and surfRect.collidepoint(pg.mouse.get_pos()) == False and count>10:
-            return
+            return helps
         if rgb.get_click():
             rgb_val = rgb_col(screen, canvas, rgb_val, (662, 375))
             if rgb_val != None:
@@ -318,13 +360,16 @@ def colchoice(screen, canvas, canvas_col_button):
                 canvas.screencol = pg.Color(rgb_val[0], rgb_val[1], rgb_val[2])
                 canvas.new_col(screen)
                 canvas_col_button.colour = canvas.screencol
-        rgb.show(surf)
+        canvas.show(screen)
+        help_box = rgb.show(surf)
         screen.blit(surf, (745, 105))
+        if help_box != None and helps:
+            help_box.show(screen)
         pg.display.update()
         count += 1
         clock.tick(FPS)
 
-def shape_choice(screen, canvas, surfpos = (975, 105)):
+def shape_choice(screen, canvas, helps, surfpos = (975, 105)):
     clock = pg.time.Clock()
     FPS = 20
     surf = pg.Surface((80, 320))
@@ -354,7 +399,8 @@ def shape_choice(screen, canvas, surfpos = (975, 105)):
     rect_button = Button(20, 80, 40, 40, img = rect_surf, value = 'r', surfpos = surfpos, outline = True, hovour = False)
     circ_button = Button(20, 140, 40, 40, img = circ_surf, value = 'c', surfpos = surfpos, outline = True, hovour = False)
     elps_button = Button(20, 200, 40, 40, img = ellipse_surf, value = 'el', surfpos = surfpos, outline = True, hovour = False)
-    rep_button = Button(20, 260, 40, 40, "repeat", textHeight = 15, colour = light_gray, hovourColour = light_light_gray, surfpos = surfpos, outline = True)
+    rep_button = Button(20, 260, 40, 40, "repeat", textHeight = 15, colour = light_gray, hovourColour = light_light_gray,
+                        surfpos = surfpos, outline = True, help_tip = help_list_maker(REPEAT))
 
     button_list = [line_button, rect_button, circ_button, elps_button]
 
@@ -367,19 +413,27 @@ def shape_choice(screen, canvas, surfpos = (975, 105)):
                 Quit(screen)
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
-                    return
+                    return helps
+                if event.key == pg.K_h:
+                    fade(screen, True, col = screenCol)
+                    help_screen(PAINT, screencol, textcol)
+                elif event.key == pg.K_x:
+                    if helps:
+                        helps = False
+                    else:
+                        helps = True
 
         surf.fill(light_gray)
         for button in button_list:
             if button.get_click():
                 canvas.mode = button.value
-                return
+                return helps
             if canvas.mode == button.value:
                 button.selected = True
-            button.show(surf)
+            temp = button.show(surf)
 
         if pg.mouse.get_pressed()[0] and surfRect.collidepoint(pg.mouse.get_pos()) == False and count > 20:
-            return
+            return helps
 
         if rep_button.get_click():
             if canvas.repeat:
@@ -389,9 +443,13 @@ def shape_choice(screen, canvas, surfpos = (975, 105)):
                 canvas.repeat = True
                 rep_button.selected = True
 
-        rep_button.show(surf)
+        canvas.show(screen)
 
+        help_box = rep_button.show(surf)
+        
         screen.blit(surf, surfpos)
+        if help_box != None and helps:
+            help_box.show(screen)
         pg.display.update()
         count += 1
         clock.tick(FPS)
@@ -404,7 +462,7 @@ def brushsize(screen, canvas):
     surfRect = surf.get_rect()
 
     dct = {pg.K_1:1, pg.K_2:2, pg.K_3:3, pg.K_4:4, pg.K_5:5, pg.K_6:6, pg.K_7:7, pg.K_8:8, pg.K_9:9, pg.K_0:0}
-    text_size = Text(0, 30, 25, surfRect.size, str(canvas.thick))
+    text_size = Text(0, 20, 25, (100, 30), str(canvas.thick), cursor = True, center = True)
     text_instructions = Text(0, 10, 15, surfRect.size, "Type Size in pixels")
     check = True
 
@@ -430,6 +488,9 @@ def brushsize(screen, canvas):
                     return
                 elif event.key == pg.K_BACKSPACE:
                     text_size.text = text_size.size[:-1]
+                elif event.key == pg.K_h:
+                    fade(screen, True, col = screenCol)
+                    help_screen(PAINT, screencol, textcol)
 
 
         if pg.mouse.get_pressed()[0] and surfRect.collidepoint(pg.mouse.get_pos()) == False and count>40:
@@ -442,10 +503,11 @@ def brushsize(screen, canvas):
         count += 1
         clock.tick(FPS)
 
-def toolbar(screen, button_list_col, button_list_mode, button_list_misc, canvas, size = (1120, 100), pos = (0,0), col = light_gray):
+def toolbar(screen, button_list_col, button_list_mode, button_list_misc, canvas, helps, size = (1120, 100), pos = (0,0), col = light_gray):
     rgb_val = canvas.brushcol
     surf = pg.Surface(size)
     surf.fill(col)
+    help_box = None
     for button in button_list_col:
             if button.get_click():
                 rgb_val = button.colour
@@ -458,6 +520,7 @@ def toolbar(screen, button_list_col, button_list_mode, button_list_misc, canvas,
             if button.selected and canvas.brushcol != button.colour:
                 button.selected = False
             button.show(surf)
+
     for button in button_list_mode:
             if button.get_click():
                 canvas.mode = button.value
@@ -465,7 +528,9 @@ def toolbar(screen, button_list_col, button_list_mode, button_list_misc, canvas,
                     button.selected = True
             if button.selected and canvas.mode != button.value:
                 button.selected = False
-            button.show(surf)
+            temp = button.show(surf)
+            if temp != None:
+                help_box = temp
 
     if button_list_misc[0].get_click():
         canvas.new(screen)
@@ -481,10 +546,14 @@ def toolbar(screen, button_list_col, button_list_mode, button_list_misc, canvas,
             active(button_list_misc[2], False)
         active(button_list_misc[1])
     for button in button_list_misc:
-        button.show(surf, canvas = canvas)
+        temp = button.show(surf, canvas = canvas)
+        if temp != None:
+            help_box = temp
+    if help_box != None and helps:
+        help_box.show(surf)
     screen.blit(surf, pos)
     if button_list_misc[3].get_click():
-        colchoice(screen, canvas, button_list_misc[3])
+        helps = colchoice(screen, canvas, button_list_misc[3], helps)
         if canvas.screencol == canvas.brushcol:
             canvas.mode = 'e'
     elif button_list_misc[4].get_click():
@@ -496,11 +565,11 @@ def toolbar(screen, button_list_col, button_list_mode, button_list_misc, canvas,
         if canvas.brushcol == canvas.screencol:
             canvas.mode = 'e'
     elif button_list_misc[6].get_click():
-        shape_choice(screen, canvas)
+        helps = shape_choice(screen, canvas, helps)
         pg.time.wait(10)
+    return helps
 
-def mainLoop(screencol, brushcol, prev_screen, rect_pos):
-    start = True
+def mainLoop(screencol, brushcol, prev_screen, rect_pos, start = True):
     pg.display.set_caption('Paint')
     screenWd, screenHt = (1120, 630)
     screen = pg.display.set_mode((screenWd, screenHt))
@@ -509,6 +578,9 @@ def mainLoop(screencol, brushcol, prev_screen, rect_pos):
     count = 0
     frames = draw_frames//FPS
     clock = pg.time.Clock()
+    helps = False
+
+    help_list = help_list_maker(ALL)
 
     white_butt = Button(250, 12, 25, 25, colour = white, outline = True, hovour = False)
     black_butt = Button(250, 63, 25, 25, colour = black, outline = True, hovour = False)
@@ -520,9 +592,9 @@ def mainLoop(screencol, brushcol, prev_screen, rect_pos):
     blue_butt = Button(400, 12, 25, 25, colour = blue, outline = True, hovour = False)
     
     butt_undo = Button(700, 30, 40, 40, "<---", colour = light_gray, hovourColour = white,
-        textHeight = 30,  enabled_selected = False, outline = True, activated = False)
+        textHeight = 30,  enabled_selected = False, outline = True, activated = False, help_tip = help_list[5])
     butt_redo = Button(760, 30, 40, 40, "--->", colour = light_gray, hovourColour = white,
-        textHeight = 30,  enabled_selected = False, outline = True, activated = False)
+        textHeight = 30,  enabled_selected = False, outline = True, activated = False, help_tip = help_list[6])
 
     canvas = Canvas(screencol, brushcol, 5, 30, screenWd, screenHt, (0,100), butt_undo, butt_redo)
     canvas.new(screen)
@@ -545,16 +617,16 @@ def mainLoop(screencol, brushcol, prev_screen, rect_pos):
     pg.draw.circle(shapes_surf_hov, black, (25, 25), 15, 2)
     
 
-    brush_butt = Button(100,25, 50, 50, img = brush, hovourImg = brush_hov, hovour = True, value = 'b', outline = True)
-    eraser_butt = Button(175,25, 50, 50, img = eraser, hovourImg = eraser_hov, hovour = True, value = 'e', outline = True)
-    butt_col_pick = Button(900, 25, 50, 50, value = 'p', img = col_pick_pic, hovourImg = col_pick_pic_hov, outline = True)
-    butt_fill = Button(975, 25, 50, 50, value = 'f', img = fill_pic, hovourImg = fill_pic_hov, outline = True)
+    brush_butt = Button(100,25, 50, 50, img = brush, hovourImg = brush_hov, hovour = True, value = 'b', outline = True, help_tip = help_list[1])
+    eraser_butt = Button(175,25, 50, 50, img = eraser, hovourImg = eraser_hov, hovour = True, value = 'e', outline = True, help_tip = help_list[2])
+    butt_col_pick = Button(900, 25, 50, 50, value = 'p', img = col_pick_pic, hovourImg = col_pick_pic_hov, outline = True, help_tip = help_list[8])
+    butt_fill = Button(975, 25, 50, 50, value = 'f', img = fill_pic, hovourImg = fill_pic_hov, outline = True, help_tip = help_list[9])
     
-    butt_new = Button(25, 25, 50, 50, 'new', textHeight = 30,colour = white, enabled_selected = False, outline = True, hovour = False)
-    butt_canvas_menu = Button(835, 30, 40, 40, colour = canvas.screencol, enabled_selected = False, outline = True, hovour = False)
-    butt_size = Button(450, 25, 100, 50, colour = light_gray, enabled_selected = False, isSize = True, hovour = False)
-    butt_slider = Button(575, 25, 100, 50, img = slider, enabled_selected = False, outline = True, hovour = False)
-    butt_shapes = Button(1050, 25, 50, 50, img = shapes_surf, hovourImg = shapes_surf_hov, outline = True)
+    butt_new = Button(25, 25, 50, 50, 'new', textHeight = 30,colour = white, enabled_selected = False, outline = True, hovour = False, help_tip = help_list[0])
+    butt_canvas_menu = Button(835, 30, 40, 40, colour = canvas.screencol, enabled_selected = False, outline = True, hovour = False, help_tip = help_list[7])
+    butt_size = Button(450, 25, 100, 50, colour = light_gray, enabled_selected = False, isSize = True, hovour = False, help_tip = help_list[3])
+    butt_slider = Button(575, 25, 100, 50, img = slider, enabled_selected = False, outline = True, hovour = False, help_tip = help_list[4])
+    butt_shapes = Button(1050, 25, 50, 50, img = shapes_surf, hovourImg = shapes_surf_hov, outline = True, help_tip = help_list[10])
 
     button_list_col = [white_butt, black_butt, red_butt, orange_butt, yellow_butt,
                             green_butt, skyblue_butt, blue_butt]
@@ -575,6 +647,16 @@ def mainLoop(screencol, brushcol, prev_screen, rect_pos):
                 if event.key == pg.K_ESCAPE:
                     fade(screen, True, col = screencol)
                     return
+                if event.key == pg.K_h:
+                    fade(screen, True, col = screenCol)
+                    help_screen(PAINT, screencol, brushcol)
+                elif event.key == pg.K_n:
+                    canvas.new_screen
+                elif event.key == pg.K_x:
+                    if helps:
+                        helps = False
+                    else:
+                        helps = True
 
         mpos = pg.mouse.get_pos()
 
@@ -612,7 +694,7 @@ def mainLoop(screencol, brushcol, prev_screen, rect_pos):
             else:
                 pg.draw.circle(screen, canvas.brushcol, mpos, canvas.thick//2)
 
-            toolbar(screen, button_list_col, button_list_mode, button_list_misc, canvas)
+            helps = toolbar(screen, button_list_col, button_list_mode, button_list_misc, canvas, helps)
             
             if start:
                 expand(screen, screen.copy(), [rect_pos[0], rect_pos[1]+87, 200, 113], prev_screen)
@@ -623,8 +705,8 @@ def mainLoop(screencol, brushcol, prev_screen, rect_pos):
         clock.tick(draw_frames)
 
 # try:
-#     mainLoop(white, black)
+#     mainLoop(white, black, None, None, False)
 # except:
 #     traceback.print_exc()
 # finally:
-#     Quit()
+#     Quit(screen)

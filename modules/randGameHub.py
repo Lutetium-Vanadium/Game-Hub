@@ -3,6 +3,7 @@ pg.init()
 import random as rand
 from GUI_elements import*
 import clr
+from help import*
 
 butt_mode = Button(1075, 15, 20, 20)
 
@@ -51,6 +52,17 @@ def difficultyChoice(screenCol, textCol, prev_screen, rect_pos):
                 if event.key == pg.K_ESCAPE:
                     fade(screen, True, col = screenCol)
                     return screenCol, textCol, False, None
+                if event.key == pg.K_m:
+                    if screenCol == clr.black:
+                        textCol = clr.black
+                        screenCol = clr.white
+                    else:
+                        textCol = clr.white
+                    butt_mainMenu.textColour = butt_exit.textColour = textCol
+                elif event.key == pg.K_h:
+                    fade(screen, True, col = screenCol)
+                    help_screen(CIRCLE_GAME, screenCol, textCol)
+                    pg.display.set_caption('Circle Game')
 
         if buttE.get_click():
             speed = 6
@@ -121,6 +133,7 @@ def mainLoop(screenCol, textCol, speed, size):
     screen = pg.display.set_mode((screenWidth, screenHeight))
     clock = pg.time.Clock()
     screenCenter = (screenWidth//2, screenHeight//2)
+    paused = False
     
     circle = RandCircle(size)
     
@@ -128,17 +141,35 @@ def mainLoop(screenCol, textCol, speed, size):
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 Quit(screen)
-            if event.type == pg.KEYDOWN:
-                if event.key == pg.K_ESCAPE:
-                    fade(screen, True, col = screenCol)
-                    return screenCol, textCol
             if event.type == pg.MOUSEBUTTONDOWN:
-                if screen.get_at(pg.mouse.get_pos()) == clr.red:
+                if screen.get_at(pg.mouse.get_pos()) == clr.red and paused == False:
                     text(screen, 0, 0, 79, "Congrats! Clicked!", textCol, screenCenter)
                     pg.display.update()
                     pg.time.wait(2500)
                     fade(screen, True, col = screenCol)
                     return screenCol, textCol
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_ESCAPE:
+                    fade(screen, True, col = screenCol)
+                    return screenCol, textCol
+                if event.key == pg.K_m:
+                    if screenCol == clr.black:
+                        screenCol = clr.white
+                        textCol = clr.black
+                    else:
+                        screenCol = clr.black
+                        textCol = clr.white
+                elif event.key == pg.K_h:
+                    if play:
+                        paused = True
+                    fade(screen, True, col = screenCol)
+                    help_screen(CIRCLE_GAME, screenCol, textCol)
+                    pg.display.set_caption('Circle Game')
+                elif event.key == pg.K_p:
+                    if paused:
+                        paused = False
+                    else:
+                        paused = True
 
         if butt_mode.get_click():
             if screenCol == clr.black:
@@ -155,8 +186,11 @@ def mainLoop(screenCol, textCol, speed, size):
         else:
             moon(screen)
         
-        circle.move(screenWidth, screenHeight, speed)
-        
+        if paused == False:
+            circle.move(screenWidth, screenHeight, speed)
+        else:
+            text(screen, 0, 0, 50, "Paused", textCol, (560, 100))
+
         circle.show(screen)
         pg.display.update()
         

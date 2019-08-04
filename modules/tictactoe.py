@@ -3,6 +3,7 @@ pg.init()
 from GUI_elements import*
 import clr, traceback
 from random import choice, randint
+from help import*
 
 ##############################################################################################################################################################################################
 
@@ -218,6 +219,20 @@ def mainLoop(screenCol, textCol, prev_screen, rect_pos):
                 if event.key == pg.K_n:
                     turn = new(grid, screen, screenCol, turn)
                     won = False
+                elif event.key == pg.K_m:
+                    if screenCol == clr.black:
+                        textCol = clr.black
+                        screenCol = clr.white
+                    else:
+                        textCol = clr.white
+                        screenCol = clr.black
+                    exit_button.textColour = textCol
+                    new_button.textColour = textCol
+                    butt_mainMenu.textColour = textCol
+                    grid.col = textCol
+                elif event.key == pg.K_h:
+                    fade(screen, True, col = screenCol)
+                    help_screen(TICTACTOE, screenCol, textCol)
                 for i in range(len(key_check)):
                     if event.key == key_check[i] and grid.box_used[i] == False:
                         grid.mark(i, turn, screen, screenCol)

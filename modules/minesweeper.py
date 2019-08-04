@@ -3,6 +3,7 @@ from GUI_elements import*
 from clr import*
 import traceback
 from random import randint
+from help import*
 
 screenWd, screenHt = 1120, 630
 screenCenter = (screenWd//2, screenHt//2)
@@ -263,7 +264,7 @@ def settings(screencol, textcol, size, n_bombs):
 	hard = Button(125, 425, 50, 50, "Hard", textHeight = 20, textColour = textcol, value = 3,
 				  enabled_selected = True, outline = True)
 
-	easy.selected = True
+	diff = round(2*(n_bombs - 5)/(width.value+height.value))
 
 	nums = {pg.K_1:'1', pg.K_2:'2', pg.K_3:'3', pg.K_4:'4', pg.K_5:'5', pg.K_6:'6', pg.K_7:'7', pg.K_8:'8', pg.K_9:'9', pg.K_0:'0'}
 
@@ -295,6 +296,18 @@ def settings(screencol, textcol, size, n_bombs):
 					txt.cursor = False
 					txt.text = ''
 					editing = False
+				elif event.key == pg.K_h:
+					fade(screen, True, col = screenCol)
+					help_screen(MINESWEEPER, screencol, textcol)
+				elif event.key == pg.K_m:
+					if screencol == clr.black:
+						screencol = clr.white
+						textcol = clr.black
+					else:
+						screencol = clr.black
+						textcol = clr.white
+					for obj in transparent_object_list:
+						obj.textColour = textcol
 		
 		screen.fill(screencol)
 
@@ -332,9 +345,10 @@ def settings(screencol, textcol, size, n_bombs):
 		for button in bomb_b_list:
 			if button.get_click():
 				diff = button.value
-				button.selected = True
 			if button.value != diff:
 				button.selected = False
+			else:
+				button.selected = True
 
 		if width.value > int(4/3 * height.value):
 			max_width = int(4/3 * height.value)
@@ -390,6 +404,17 @@ def mainLoop(screencol, textcol, size, n_bombs, prev_screen = None, rect_pos = N
 					return False, screencol, textcol
 				if event.key == pg.K_n:
 					return True, screencol, textcol
+				elif event.key == pg.K_h:
+					fade(screen, True, col = screenCol)
+					help_screen(MINESWEEPER, screencol, textcol)
+				elif event.key == pg.K_m:
+					if screencol == clr.black:
+						screencol = clr.white
+						textcol = clr.black
+					else:
+						screencol = clr.black
+						textcol = clr.white
+					exit.textColour = textcol
 
 		if butt_mode.get_click():
 			if screencol == clr.black:

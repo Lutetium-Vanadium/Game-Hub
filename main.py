@@ -11,8 +11,12 @@ import flappy_bird
 import dinorun
 import randGameHub
 import minesweeper
+from help import*
 textCol = clr.white
 screenCol = clr.black
+screenWd, screenHt = 1120, 630
+clock = pg.time.Clock()
+FPS = 25
 SETTINGS = None
 hub = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "hub.png"))
 
@@ -25,10 +29,7 @@ def backToHub():
 
 def mainLoop():
     global textCol, screenCol, back
-    screenWd, screenHt = 1120, 630
     screen = pg.display.set_mode((screenWd, screenHt))
-    clock = pg.time.Clock()
-    FPS = 25
     back = False
 
     background = black_background = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "background.png"))
@@ -75,6 +76,18 @@ def mainLoop():
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
                     Quit(screen)
+                if event.key == pg.K_m:
+                    if screenCol == clr.black:
+                        background = white_background
+                        exit_button.textColour = textCol = clr.black
+                        screenCol = clr.white
+                    else:
+                        background = black_background
+                        exit_button.textColour = textCol = clr.white
+                        screenCol = clr.black
+                elif event.key == pg.K_h:
+                    fade(screen, True, col = screenCol)
+                    help_screen(HUB, screenCol, textCol)
         
         if randCircle.get_click():
             temp = screenCol
@@ -150,12 +163,12 @@ def mainLoop():
             replay, screenCol, textCol = minesweeper.mainLoop(screenCol, textCol, size, n_bombs, screen.copy(),
                                                                 (mine_button.rect[0], mine_button.rect[1]), False)
             if replay == SETTINGS:
-                minesweeper.settings(screenCol, textCol, size, n_bombs)
+                size, n_bombs, screenCol, textCol = minesweeper.settings(screenCol, textCol, size, n_bombs)
                 replay = True
             while replay:
                 replay, screenCol, textCol = minesweeper.mainLoop(screenCol, textCol, size, n_bombs)
                 if replay == SETTINGS:
-                    minesweeper.settings(screenCol, textCol, size, n_bombs)
+                    size, n_bombs, screenCol, textCol = minesweeper.settings(screenCol, textCol, size, n_bombs)
                     replay = True
             if temp != screenCol:
                 if screenCol == clr.black:
@@ -186,17 +199,21 @@ def mainLoop():
         screen.blit(background, (0, 0))
 
         if randCircle.onButton():
-            text(screen, 30, 585, 30, "Circle Game: Click on the red circle to win the game!", textCol)
+            s = "Circle Game: Click on the red circle to win the game!"
         elif paint_button.onButton():
-            text(screen, 30, 585, 30, "Paint: Feel free to draw anything.", textCol)
+            s = "Paint: Feel free to draw anything."
         elif tictactoe_button.onButton():
-            text(screen, 30, 585, 30, "Tic-Tac-Toe: Classic game where you need to get 3 in a row. With 2-player and 1 player.", textCol)
+            s = "Tic-Tac-Toe: Classic game where you need to get 3 in a row. With 2-player and 1 player."
         elif flappybird.onButton():
-            text(screen, 30, 585, 30, "Flappy Bird: Classic game where you need to last as long as you can without crashing.", textCol)
+            s = "Flappy Bird: Classic game where you need to last as long as you can without crashing."
         elif dino_run.onButton():
-            text(screen, 30, 585, 30, "Dino Run: Classic game where you need to last as long as you can without crashing.", textCol)
+            s = "Dino Run: Classic game where you need to last as long as you can without crashing."
         elif mine_button.onButton():
-            text(screen, 30, 585, 30, "Minesweeper: Win the game by putting flags on every bomb.", textCol)
+            s = "Minesweeper: Win the game by putting flags on every bomb."
+        else:
+            s = ''
+        text(screen, 30, 570, 30, s, textCol)
+        text(screen, 0, 0, 25, "Press 'h' for the help.", textCol, (560, 615))
 
         if screenCol == clr.black:
             sun(screen)

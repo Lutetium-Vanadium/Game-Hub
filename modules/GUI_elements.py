@@ -3,11 +3,12 @@ pg.init()
 import math
 import clr
 from animations import*
+# from help import*
 
 class Button():
     def __init__(self, x, y, wd, ht, text = '', img = None, hovourImg = None, textHeight = None, textColour = clr.black,
                  colour = clr.gray, hovourColour = clr.light_gray, opaque = True, activated = True, outline = False,
-                 hovour = True, value = None, surfpos = (0,0), enabled_selected = True, isSize = False):
+                 hovour = True, value = None, surfpos = (0,0), enabled_selected = True, isSize = False, help_tip = None):
         if not textHeight:
             textHeight = ht//5
         self.textHeight = textHeight
@@ -29,6 +30,8 @@ class Button():
         self.enabled_selected = enabled_selected
         self.selected = False
         self.isSize = isSize
+        self.help = help_tip
+        self.alpha = 255
     def onButton(self, origin = None):
         if origin == None:
             origin = self.surfpos
@@ -50,6 +53,7 @@ class Button():
             else:
                 colour = self.colour
         if self.img:
+            image.set_alpha(self.alpha)
             surface.blit(image, self.xy)
         elif self.opaque:
             pg.draw.rect(surface, colour, self.rect)
@@ -69,7 +73,12 @@ class Button():
         textSurf = pg.font.SysFont(pg.font.get_default_font(), self.textHeight).render(self.text, True, self.textColour)
         textRect = textSurf.get_rect()
         textRect.center = self.rect.center
+        textSurf.set_alpha(self.alpha)
+        if self.onButton(origin) and self.help != None:
+            # self.help.show(surface)
+            return self.help
         surface.blit(textSurf, textRect)
+        return None
     def get_click(self, origin = None):
         if origin == None:
             origin = self.surfpos
@@ -124,6 +133,38 @@ class Text():
         else:
             surf = textSurf
         screen.blit(surf, self.location)
+
+class Tooltip():
+    def __init__(self, text, flip = False, size = (300, 30), textHt = None,
+                 textCol = clr.black, col = clr.white, outline = False):
+        if textHt == None:
+            textHt = int(2 * size[1]/3)
+        self.surf = pg.Surface(size)
+        self.size = size
+        self.rect = self.surf.get_rect()
+        self.text = text
+        self.textHt = textHt
+        self.textCol = textCol
+        self.col = col
+        self.outline = outline
+        self.flip = flip
+    def show(self, screen, thickness = 4):
+        textSurf = pg.font.SysFont(pg.font.get_default_font(), self.textHt).render(self.text, True, self.textCol)
+        textRect = textSurf.get_rect()
+        textRect.center = self.rect.center
+        self.surf.fill(self.col)
+        if self.outline:
+            pg.draw.line(self.surf, self.textCol, (0,0), (self.size[0],0), thickness)
+            pg.draw.line(self.surf, self.textCol, (self.size[0]-thickness//2,self.size[1]-thickness//2), (self.size[0],0), thickness)
+            pg.draw.line(self.surf, self.textCol, (self.size[0]-thickness//2,self.size[1]-thickness//2), (0,self.size[1]), thickness)
+            pg.draw.line(self.surf, self.textCol, (0,self.size[1]), (0,0), thickness)
+        self.surf.blit(textSurf, textRect.topleft)
+        if self.flip:
+            pos = pg.mouse.get_pos()[0] - self.size[0], pg.mouse.get_pos()[1] - self.size[1]
+        else:
+            pos = pg.mouse.get_pos()
+        screen.blit(self.surf, pos)
+
 '''---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
 def Quit(screen):
     fade(screen, True, 0.5)
@@ -132,7 +173,7 @@ def Quit(screen):
 
 def text(screen, x , y, size, text, colour = clr.white, center = None):
     textSurf = pg.font.SysFont(pg.font.get_default_font(), size).render(text, True, colour)
-    if center:
+    if center != None:
         textRect = textSurf.get_rect()
         textRect.center = center
         x, y = textRect.topleft
