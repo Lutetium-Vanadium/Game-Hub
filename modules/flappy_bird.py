@@ -174,7 +174,7 @@ def mainLoop(screencol, textcol, prev_screen = None, rect_pos = None):
                 elif event.key == pg.K_h:
                     if play:
                         paused = True
-                    fade(screen, True, col = screenCol)
+                    fade(screen, True, col = screencol)
                     help_screen(FLAPPY_BIRD, screencol, textcol)
                 elif event.key == pg.K_m:
                     if screencol == clr.black:

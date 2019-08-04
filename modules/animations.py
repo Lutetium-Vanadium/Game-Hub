@@ -46,7 +46,7 @@ def fade(screen, begin, time = 0.25, col = clr.black):
         pg.display.update()
         clock.tick(FPS)
 
-def expand(screen, icon, rect, prev_screen = None, time = 0.5):
+def expand(screen, icon, rect, prev_screen = None, time = 0.3):
     if prev_screen == None:
         prev_screen = screen.copy()
  

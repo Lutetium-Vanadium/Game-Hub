@@ -297,7 +297,7 @@ def settings(screencol, textcol, size, n_bombs):
 					txt.text = ''
 					editing = False
 				elif event.key == pg.K_h:
-					fade(screen, True, col = screenCol)
+					fade(screen, True, col = screencol)
 					help_screen(MINESWEEPER, screencol, textcol)
 				elif event.key == pg.K_m:
 					if screencol == clr.black:
@@ -405,7 +405,7 @@ def mainLoop(screencol, textcol, size, n_bombs, prev_screen = None, rect_pos = N
 				if event.key == pg.K_n:
 					return True, screencol, textcol
 				elif event.key == pg.K_h:
-					fade(screen, True, col = screenCol)
+					fade(screen, True, col = screencol)
 					help_screen(MINESWEEPER, screencol, textcol)
 				elif event.key == pg.K_m:
 					if screencol == clr.black:

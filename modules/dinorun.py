@@ -23,7 +23,7 @@ class Dino():
         self.mask = pg.mask.from_surface(self.surf)
         self.image_count = 0
     def show(self, screen, screenCol, count, alive, paused):
-        if count % 5 == 0 and paused == False:
+        if count % 2 == 0 and paused == False:
             self.image_count += 1
             self.image_count %= 2
         if screenCol == clr.black:
@@ -227,7 +227,7 @@ def mainLoop(screenCol, textCol, prev_screen = None, rect_pos = None):
         if play == False:
             text(screen, 0, 0, 50, "Press space to start", textCol, (560, 250))
         if start and prev_screen != None:
-            expand(screen, screen.copy(), [rect_pos[0], rect_pos[1]+90, 200, 113], prev_screen)
+            expand(screen, screen.copy(), [rect_pos[0]-90, rect_pos[1]+90, 200, 113], prev_screen)
             start = False
         else:
             pg.display.update()

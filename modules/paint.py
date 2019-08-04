@@ -257,7 +257,7 @@ def rgb_col(screen, canvas, rgb_val, pos):
                 if event.key == pg.K_RETURN:
                     return rgb_val
                 if event.key == pg.K_h:
-                    fade(screen, True, col = screenCol)
+                    fade(screen, True, col = screencol)
                     help_screen(PAINT, screencol, textcol)
 
         keystate = pg.key.get_pressed()
@@ -336,7 +336,7 @@ def colchoice(screen, canvas, canvas_col_button, helps):
                 if event.key == pg.K_ESCAPE:
                     return helps
                 if event.key == pg.K_h:
-                    fade(screen, True, col = screenCol)
+                    fade(screen, True, col = screencol)
                     help_screen(PAINT, screencol, textcol)
                 elif event.key == pg.K_x:
                     if helps:
@@ -415,7 +415,7 @@ def shape_choice(screen, canvas, helps, surfpos = (975, 105)):
                 if event.key == pg.K_ESCAPE:
                     return helps
                 if event.key == pg.K_h:
-                    fade(screen, True, col = screenCol)
+                    fade(screen, True, col = screencol)
                     help_screen(PAINT, screencol, textcol)
                 elif event.key == pg.K_x:
                     if helps:
@@ -489,7 +489,7 @@ def brushsize(screen, canvas):
                 elif event.key == pg.K_BACKSPACE:
                     text_size.text = text_size.size[:-1]
                 elif event.key == pg.K_h:
-                    fade(screen, True, col = screenCol)
+                    fade(screen, True, col = screencol)
                     help_screen(PAINT, screencol, textcol)
 
 
@@ -648,7 +648,7 @@ def mainLoop(screencol, brushcol, prev_screen, rect_pos, start = True):
                     fade(screen, True, col = screencol)
                     return
                 if event.key == pg.K_h:
-                    fade(screen, True, col = screenCol)
+                    fade(screen, True, col = screencol)
                     help_screen(PAINT, screencol, brushcol)
                 elif event.key == pg.K_n:
                     canvas.new_screen
