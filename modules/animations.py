@@ -8,12 +8,9 @@ screen_center = (screen_size[0]//2, screen_size[1]//2)
 clock = pg.time.Clock()
 FPS = 100
 
-def easeInOut(time, start, change, total_time):
-    time /= total_time/2
-    if time < 1:
-        return change/2*time*time*time*time + start
-    time -= 2
-    return -change/2 * (time*time*time*time - 2) + start
+def easeIn(time, start, change, total_time):
+    time /= total_time
+    return time*time*time*change/11 + start
 
 def sin_curve(dist, iterations):
     # calculates sin values
@@ -66,15 +63,15 @@ def expand(screen, icon, rect, prev_screen = None, time = 0.5):
 
     pos_diff = (-pos[0], -pos[1])
 
-    for i in range(iterations):
+    for i in range(iterations-2):
 
-        new_size[0] = round(easeInOut(i, size[0], scale_x, iterations*3))
-        new_size[1] = round(easeInOut(i, size[1], scale_y, iterations*3))
+        new_size[0] = round(easeIn(i, size[0], scale_x, iterations))
+        new_size[1] = round(easeIn(i, size[1], scale_y, iterations))
 
         blit_icon = pg.transform.smoothscale(icon, new_size)
 
-        new_pos[0] = round(easeInOut(i, pos[0], pos_diff[0], iterations*3))
-        new_pos[1] = round(easeInOut(i, pos[1], pos_diff[1], iterations*3))
+        new_pos[0] = round(easeIn(i, pos[0], pos_diff[0], iterations))
+        new_pos[1] = round(easeIn(i, pos[1], pos_diff[1], iterations))
         screen.blit(prev_screen, (0,0))
         screen.blit(blit_icon, new_pos)
         pg.display.update()
