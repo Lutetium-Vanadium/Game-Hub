@@ -13,6 +13,7 @@ FLAPPY_BIRD = 3
 DINO_RUN = 4
 PAINT = 5
 MINESWEEPER = 6
+PONG = 7
 
 def appName(program):
     if program == HUB:
@@ -29,6 +30,8 @@ def appName(program):
         return 'Paint'
     elif program == MINESWEEPER:
         return "Minesweeper"
+    elif program == PONG:
+        return 'Pong'
 
 def help_screen(program, screencol, textcol):
     start = True
@@ -83,6 +86,10 @@ def help_screen(program, screencol, textcol):
             s1 = "Left click to reveal a square and right click to place a flag."
             s2 = "If you click on an already revealed square, it reveals surrounding squares."
             text(screen, 50, 460, 30, "Click the settings button to change the size and number of bombs.", textcol)
+        elif program == PONG:
+            s1 = "Dont let the ball get past your paddle."
+            s2 = "'w' and 's' for Player 1 movement. Up and Down arrow for Player 2."
+            text(screen, 50, 460, 30, "This game can be paused. Press r to restart the round.", textcol)
         text(screen, 50, 380, 30, s1, textcol)
         text(screen, 50, 420, 30, s2, textcol)
         text(screen, 0, 0, 30, "Press esc, enter or click anywhere to return.", textcol, (wd_center, 550))

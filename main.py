@@ -11,6 +11,7 @@ import flappy_bird
 import dinorun
 import randGameHub
 import minesweeper
+import pong
 from help import*
 textCol = clr.white
 screenCol = clr.black
@@ -59,12 +60,16 @@ def mainLoop():
     mine_img = pg.transform.smoothscale(mine_icon, (200, 200))
     mine_img_hov = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "minesweeper_hov.png"))
 
+    pong_icon = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "pongImg.png"))
+    pong_hov = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "pongImg_hov.png"))
+
     randCircle = Button(50, 50, 200, 200, 'Circle Game', randGameImage, randGameImage_hovour, textColour = clr.white)
     tictactoe_button = Button(320, 50, 200, 200, 'Tic-Tac-Toe', tictactoe_image, tictactoe_hovour)
     flappybird = Button(590, 50, 200, 200, 'Flappy Bird', flappybird_img, flappybird_hov)
     dino_run = Button(860, 50, 200, 200, 'Dino run', dinorun_img, dinorun_img_hov)
     paint_button = Button(50, 325, 200, 200, '', paintImg, paintImg_hovour)
     mine_button = Button(320, 325, 200, 200, 'minesweeper', mine_img, mine_img_hov, textColour = clr.white)
+    pong_button = Button(590, 325, 200, 200, 'pong', pong_icon, pong_hov, textColour = clr.white)
 
     exit_button = Button(1050, 600, 50, 30, "Exit", textHeight = 30, textColour = textCol, opaque = False)
     butt_mode = Button(1075, 15, 20, 20)
@@ -179,6 +184,20 @@ def mainLoop():
                     exit_button.textColour = textCol
             backToHub()
 
+        elif pong_button.get_click():
+            pg.display.set_icon(pong_icon)
+            temp = screenCol
+            replay, screenCol, textCol = pong.mainLoop(screenCol, textCol, screen.copy(), (pong_button.rect[0], pong_button.rect[1]))
+            while replay:
+                replay, screenCol, textCol = pong.mainLoop(screenCol, textCol)
+            if temp != screenCol:
+                if screenCol == clr.black:
+                    background = black_background
+                    exit_button.textColour = textCol
+                else:
+                    background = white_background
+                    exit_button.textColour = textCol
+            backToHub()
 
         elif exit_button.get_click():
             Quit(screen)
@@ -210,6 +229,8 @@ def mainLoop():
             s = "Dino Run: Classic game where you need to last as long as you can without crashing."
         elif mine_button.onButton():
             s = "Minesweeper: Win the game by putting flags on every bomb."
+        elif pong_button.onButton():
+            s = "Pong: Dont let the ball get past you."
         else:
             s = ''
         text(screen, 30, 570, 30, s, textCol)
@@ -227,6 +248,7 @@ def mainLoop():
         exit_button.show(screen)
         dino_run.show(screen)
         mine_button.show(screen)
+        pong_button.show(screen)
 
         if back:
             fade(screen, False, col = screenCol)
