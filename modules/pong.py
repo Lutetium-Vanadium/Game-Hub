@@ -256,7 +256,10 @@ def mainLoop(screencol, textcol, prev_screen = None, rect_pos = None):
 		if start:
 			expand(screen, screen.copy(), [rect_pos[0], rect_pos[1]+43, 200, 113], prev_screen)
 			start = False
+<<<<<<< HEAD
 			pg.time.wait(500)
+=======
+>>>>>>> c1f4ac94e85ecdf8bab6a2161d7265f78f99839e
 		else:
 			pg.display.update()
 

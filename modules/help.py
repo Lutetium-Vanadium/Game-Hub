@@ -89,7 +89,11 @@ def help_screen(program, screencol, textcol):
         elif program == PONG:
             s1 = "Dont let the ball get past your paddle."
             s2 = "'w' and 's' for Player 1 movement. Up and Down arrow for Player 2."
+<<<<<<< HEAD
             text(screen, 50, 460, 30, "This game can be paused. Press 'r' to restart the round.", textcol)
+=======
+            text(screen, 50, 460, 30, "This game can be paused. Press r to restart the round.", textcol)
+>>>>>>> c1f4ac94e85ecdf8bab6a2161d7265f78f99839e
         text(screen, 50, 380, 30, s1, textcol)
         text(screen, 50, 420, 30, s2, textcol)
         text(screen, 0, 0, 30, "Press esc, enter or click anywhere to return.", textcol, (wd_center, 550))
