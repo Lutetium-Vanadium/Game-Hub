@@ -162,9 +162,9 @@ def ai(boxes, hardness):
         if len(corner_list):
             return choice(corner_list)
     else:
-        if len(edge_list):
-            return choice(corner_list)
         if len(corner_list):
+            return choice(corner_list)
+        if len(edge_list):
             return choice(edge_list)
 
     
@@ -233,14 +233,15 @@ def mainLoop(screenCol, textCol, prev_screen, rect_pos):
                 elif event.key == pg.K_h:
                     fade(screen, True, col = screenCol)
                     help_screen(TICTACTOE, screenCol, textCol)
-                for i in range(len(key_check)):
-                    if event.key == key_check[i] and grid.box_used[i] == False:
-                        grid.mark(i, turn, screen, screenCol)
-                        if turn%2 == 0:
-                            grid.box_used[i] = 1
-                        else:
-                            grid.box_used[i] = 2
-                        turn += 1
+                elif won == False:
+                    for i in range(len(key_check)):
+                        if event.key == key_check[i] and grid.box_used[i] == False:
+                            grid.mark(i, turn, screen, screenCol)
+                            if turn%2 == 0:
+                                grid.box_used[i] = 1
+                            else:
+                                grid.box_used[i] = 2
+                            turn += 1
 
 
         if exit_button.get_click():
@@ -248,7 +249,7 @@ def mainLoop(screenCol, textCol, prev_screen, rect_pos):
         if new_button.get_click():
             turn = new(grid, screen, screenCol, turn)
             won = False
-        elif grid.get_click(turn, screen, screenCol):
+        elif won == False and grid.get_click(turn, screen, screenCol):
             turn += 1
         elif butt_mode.get_click():
             if screenCol == clr.black:

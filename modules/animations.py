@@ -46,33 +46,18 @@ def fade(screen, begin, time = 0.25, col = clr.black):
         pg.display.update()
         clock.tick(FPS)
 
-<<<<<<< HEAD
 def expand(screen, icon, rect, prev_screen, time = 0.3):
     iterations =  round(FPS * time)
  
     pos = [rect[0], rect[1]]
 
     size = [rect[2], rect[3]]
-=======
-def expand(screen, icon, rect, prev_screen = None, time = 0.3):
-    if prev_screen == None:
-        prev_screen = screen.copy()
- 
-    pos = [rect[0], rect[1]]
-    new_pos = pos
-
-    size = [rect[2], rect[3]]
-    new_size = size
-
-    iterations =  round(FPS * time)
->>>>>>> c1f4ac94e85ecdf8bab6a2161d7265f78f99839e
 
     scale_x = screen_size[0] - size[0]
     scale_y = scale_x * 9/16
 
     pos_diff = (-pos[0], -pos[1])
 
-<<<<<<< HEAD
     for i in range(iterations):
 
         size[0] = round(easeIn(i, size[0], scale_x, iterations))
@@ -84,19 +69,6 @@ def expand(screen, icon, rect, prev_screen = None, time = 0.3):
         pos[1] = round(easeIn(i, pos[1], pos_diff[1], iterations))
         screen.blit(prev_screen, (0,0))
         screen.blit(blit_icon, pos)
-=======
-    for i in range(iterations-2):
-
-        new_size[0] = round(easeIn(i, size[0], scale_x, iterations))
-        new_size[1] = round(easeIn(i, size[1], scale_y, iterations))
-
-        blit_icon = pg.transform.smoothscale(icon, new_size)
-
-        new_pos[0] = round(easeIn(i, pos[0], pos_diff[0], iterations))
-        new_pos[1] = round(easeIn(i, pos[1], pos_diff[1], iterations))
-        screen.blit(prev_screen, (0,0))
-        screen.blit(blit_icon, new_pos)
->>>>>>> c1f4ac94e85ecdf8bab6a2161d7265f78f99839e
         pg.display.update()
         clock.tick(FPS)
 

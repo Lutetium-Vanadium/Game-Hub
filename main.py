@@ -93,10 +93,7 @@ def mainLoop():
                 elif event.key == pg.K_h:
                     fade(screen, True, col = screenCol)
                     help_screen(HUB, screenCol, textCol)
-<<<<<<< HEAD
                     back = True
-=======
->>>>>>> c1f4ac94e85ecdf8bab6a2161d7265f78f99839e
         
         if randCircle.get_click():
             temp = screenCol
@@ -112,11 +109,7 @@ def mainLoop():
                 else:
                     background = white_background
                     exit_button.textColour = textCol
-<<<<<<< HEAD
             back = backToHub()
-=======
-            backToHub()
->>>>>>> c1f4ac94e85ecdf8bab6a2161d7265f78f99839e
 
         elif tictactoe_button.get_click():
             pg.display.set_icon(tictactoe_image)
@@ -130,11 +123,7 @@ def mainLoop():
                 else:
                     background = white_background
                     exit_button.textColour = textCol
-<<<<<<< HEAD
             back = backToHub()
-=======
-            backToHub()
->>>>>>> c1f4ac94e85ecdf8bab6a2161d7265f78f99839e
 
         elif flappybird.get_click():
             pg.display.set_icon(flappybird_img)
@@ -149,11 +138,7 @@ def mainLoop():
                 else:
                     background = white_background
                     exit_button.textColour = textCol
-<<<<<<< HEAD
             back = backToHub()
-=======
-            backToHub()
->>>>>>> c1f4ac94e85ecdf8bab6a2161d7265f78f99839e
 
         elif dino_run.get_click():
             pg.display.set_icon(dinorun_img)
@@ -168,19 +153,11 @@ def mainLoop():
                 else:
                     background = white_background
                     exit_button.textColour = textCol
-<<<<<<< HEAD
             back = backToHub()
 
         elif paint_button.get_click():
             pg.display.set_icon(paintImg_icon)
-            prev_screen = paint.mainLoop(screenCol, textCol, screen.copy(), (paint_button.rect[0], paint_button.rect[1]))
-=======
-            backToHub()
-
-        elif paint_button.get_click():
-            pg.display.set_icon(paintImg_icon)
             paint.mainLoop(screenCol, textCol, screen.copy(), (paint_button.rect[0], paint_button.rect[1]))
->>>>>>> c1f4ac94e85ecdf8bab6a2161d7265f78f99839e
             pg.mouse.set_visible(True)
             back = backToHub()
 
@@ -195,7 +172,7 @@ def mainLoop():
                 size, n_bombs, screenCol, textCol = minesweeper.settings(screenCol, textCol, size, n_bombs)
                 replay = True
             while replay:
-                replay, screenCol, textCol = minesweeper.mainLoop(screenCol, textCol, size, n_bombs)
+                replay, screenCol, textCol = minesweeper.mainLoop(screenCol, textCol, size, n_bombs, back = False)
                 if replay == SETTINGS:
                     size, n_bombs, screenCol, textCol = minesweeper.settings(screenCol, textCol, size, n_bombs)
                     replay = True
@@ -206,16 +183,12 @@ def mainLoop():
                 else:
                     background = white_background
                     exit_button.textColour = textCol
-<<<<<<< HEAD
             back = backToHub()
-=======
-            backToHub()
->>>>>>> c1f4ac94e85ecdf8bab6a2161d7265f78f99839e
 
         elif pong_button.get_click():
             pg.display.set_icon(pong_icon)
             temp = screenCol
-            replay, screenCol, textCol = pong.mainLoop(screenCol, textCol, screen.copy(), (pong_button.rect[0], pong_button.rect[1]))
+            replay, screenCol, textCol = pong.mainLoop(screenCol, textCol, screen.copy(), (pong_button.rect[0], pong_button.rect[1]), True)
             while replay:
                 replay, screenCol, textCol = pong.mainLoop(screenCol, textCol)
             if temp != screenCol:
@@ -225,11 +198,7 @@ def mainLoop():
                 else:
                     background = white_background
                     exit_button.textColour = textCol
-<<<<<<< HEAD
             back = backToHub()
-=======
-            backToHub()
->>>>>>> c1f4ac94e85ecdf8bab6a2161d7265f78f99839e
 
         elif exit_button.get_click():
             Quit(screen)
@@ -244,12 +213,6 @@ def mainLoop():
                 exit_button.textColour = textCol = clr.white
                 screenCol = clr.black
 
-<<<<<<< HEAD
-=======
-        elif back:
-            back = False
-
->>>>>>> c1f4ac94e85ecdf8bab6a2161d7265f78f99839e
         screen.blit(background, (0, 0))
 
         if randCircle.onButton():
@@ -287,12 +250,9 @@ def mainLoop():
 
         if back:
             fade(screen, False, col = screenCol)
-<<<<<<< HEAD
             pg.display.update()
             # expand(screen, prev_screen, [0, 0, screenWd, screenHt], screen.copy(), False, (paint_button.rect[0], paint_button.rect[1]+87), (200 ,113))
             back = False
-=======
->>>>>>> c1f4ac94e85ecdf8bab6a2161d7265f78f99839e
         else:
             pg.display.update()
 

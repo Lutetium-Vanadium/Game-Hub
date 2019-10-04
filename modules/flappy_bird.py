@@ -6,6 +6,15 @@ from random import randint
 import sys, os
 from help import*
 
+SPAZ_MODE = False;
+
+if SPAZ_MODE:
+    A = 0.05
+    UP = -25
+else:
+    A = 2
+    UP = -50
+
 ################################################################################################################################################################################################
 
 class Pipe():
@@ -80,8 +89,11 @@ class Bird():
             screen.blit(self.pic_up, self.pos)
     def is_dead(self, screenHt):
         return self.pos[1] > screenHt
-    def move(self, t, a = 2 ):
-        self.v += a
+    def move(self, t, a = A ):
+        if SPAZ_MODE:
+            self.v += a * t/2
+        else:
+            self.v += a
         if self.v > 15:
             self.v = 15
         elif self.v < -25:
@@ -127,8 +139,12 @@ def mainLoop(screencol, textcol, prev_screen = None, rect_pos = None):
     randintlist = [(randint(0, block-1) * screenHt//block) for i in range(5)]
     randintlist[0] = block//2 *screenHt//block
     
-    pic_up = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "bird_up.png"))
-    pic_down = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "bird_down.png"))
+    if not SPAZ_MODE:
+        pic_up = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "bird_up.png"))
+        pic_down = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "bird_down.png"))
+    else:
+        pic_up = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "bird_up_SPAZ.png"))
+        pic_down = pg.image.load(os.path.join(os.getcwd(), "python_pictures", "bird_down_SPAZ.png"))
 
     top_pipe1 = Pipe(500, 0, True, randintlist[0])
     bot_pipe1 = Pipe(500, (randintlist[0] + screenHt//block), False, (screenHt - (randintlist[0] + screenHt//block)))
@@ -162,7 +178,7 @@ def mainLoop(screencol, textcol, prev_screen = None, rect_pos = None):
                     elif play == False:
                         play = True
                     else:
-                        bird.move(count, -25)
+                        bird.move(count, UP)
                 elif event.key == pg.K_p and alive:
                     if paused:
                         paused = False

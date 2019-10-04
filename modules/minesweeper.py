@@ -84,15 +84,14 @@ class Grid():
 		self.loc = ((screenWd - (size[0] * self.blocksize) + 100)//2, 0)
 		self.box_list = [[Box(self.blocksize, self.loc, self.blocksize*i, self.blocksize*j, textcol)
 						 for j in range(size[1])] for i in range(size[0])]
-		for i in range(n_bombs):
+		
+		while n_bombs > 0:
 			rand_i = randint(0, self.size[0]-1)
 			rand_j = randint(0, self.size[1]-1)
-			if self.box_list[rand_i][rand_j].val == BOMB:
-				i -= 1
-			else:
+			if self.box_list[rand_i][rand_j].val != BOMB:
 				self.box_list[rand_i][rand_j].val = BOMB
 				self.box_list[rand_i][rand_j].txt = 'b'
-			# self.box_list[rand_i][rand_j].activated = False
+				n_bombs -= 1
 		self.surf = pg.Surface((self.wd, self.ht))
 		self.pressed = [False, False]
 		self.alive = True

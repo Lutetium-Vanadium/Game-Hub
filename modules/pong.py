@@ -14,7 +14,7 @@ center = (screenWd//2, screenHt//2)
 mode = Button(screenWd - 45, 15, 20, 20)
 
 class Ball():
-	def __init__(self, radius, col, pos, max_speed = 26, colourkey = green_screen):
+	def __init__(self, radius, col, pos, max_speed = 17, colourkey = green_screen):
 		self.max_speed = max_speed
 		self.velocity = self.create_velocity()
 		self.surf = pg.Surface((radius*2, radius*2))
@@ -148,10 +148,9 @@ def mode_change(dark_mode):
 	else:
 		return black, white, True
 
-def mainLoop(screencol, textcol, prev_screen = None, rect_pos = None):
+def mainLoop(screencol, textcol, prev_screen = None, rect_pos = None, start = False):
 	pg.display.set_caption("Pong")
 	screen = pg.display.set_mode((screenWd, screenHt))
-	start = True
 	if screencol == black:
 		dark_mode = True
 	else:
@@ -256,10 +255,6 @@ def mainLoop(screencol, textcol, prev_screen = None, rect_pos = None):
 		if start:
 			expand(screen, screen.copy(), [rect_pos[0], rect_pos[1]+43, 200, 113], prev_screen)
 			start = False
-<<<<<<< HEAD
-			pg.time.wait(500)
-=======
->>>>>>> c1f4ac94e85ecdf8bab6a2161d7265f78f99839e
 		else:
 			pg.display.update()
 

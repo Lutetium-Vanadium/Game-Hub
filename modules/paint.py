@@ -645,13 +645,8 @@ def mainLoop(screencol, brushcol, prev_screen, rect_pos, start = True):
                 Quit(screen)
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
-<<<<<<< HEAD
-                    # fade(screen, True, col = screencol)
-                    return screen.copy()
-=======
                     fade(screen, True, col = screencol)
                     return
->>>>>>> c1f4ac94e85ecdf8bab6a2161d7265f78f99839e
                 if event.key == pg.K_h:
                     fade(screen, True, col = screencol)
                     help_screen(PAINT, screencol, brushcol)
@@ -695,11 +690,7 @@ def mainLoop(screencol, brushcol, prev_screen, rect_pos, start = True):
                 pg.draw.circle(screen, canvas.brushcol, mpos, 2)
             elif canvas.mode == 'p':
                 pg.draw.circle(screen, screen.get_at(mpos), mpos, 10)
-<<<<<<< HEAD
                 pg.draw.circle(screen, black, mpos, 10, 2)
-=======
-                pg.draw.circle(screen, black, mpos, 10, 1)
->>>>>>> c1f4ac94e85ecdf8bab6a2161d7265f78f99839e
             else:
                 pg.draw.circle(screen, canvas.brushcol, mpos, canvas.thick//2)
 
