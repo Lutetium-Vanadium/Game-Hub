@@ -14,6 +14,7 @@ DINO_RUN = 4
 PAINT = 5
 MINESWEEPER = 6
 PONG = 7
+SNAKE = 8
 
 def appName(program):
     if program == HUB:
@@ -32,6 +33,8 @@ def appName(program):
         return "Minesweeper"
     elif program == PONG:
         return 'Pong'
+    elif program == SNAKE:
+        return 'Snake'
 
 def help_screen(program, screencol, textcol):
     start = True
@@ -64,6 +67,7 @@ def help_screen(program, screencol, textcol):
         text(screen, 50, 230, 30, "'p' - Press 'p' to pause games that can be paused.", textcol)
         text(screen, 50, 270, 30, "'m' - Press 'm' to change light mode or dark mode. Alternatively, click the button in the top right corner.", textcol)
         text(screen, 0, 0, 40, "App specific", textcol, (wd_center, 350))
+        s1 = s2 = s3 = ""
         if program == HUB:
             s1 = "Choose which application you want to enter."
             s2 = "Hover over apps to find out what they are."
@@ -85,13 +89,18 @@ def help_screen(program, screencol, textcol):
         elif program == MINESWEEPER:
             s1 = "Left click to reveal a square and right click to place a flag."
             s2 = "If you click on an already revealed square, it reveals surrounding squares."
-            text(screen, 50, 460, 30, "Click the settings button to change the size and number of bombs.", textcol)
+            s3 = "Click the settings button to change the size and number of bombs."
         elif program == PONG:
             s1 = "Dont let the ball get past your paddle."
             s2 = "'w' and 's' for Player 1 movement. Up and Down arrow for Player 2."
-            text(screen, 50, 460, 30, "This game can be paused. Press 'r' to restart the round.", textcol)
+            s3 = "This game can be paused. Press 'r' to restart the round."
+        elif program == SNAKE:
+            s1 = "Eat apples to increase the length of your snake and your score."
+            s2 = "Use arrow keys to move around, turning directly back is prohibited."
+            s3 = "Don't collide with yourself or else you'll die."
         text(screen, 50, 380, 30, s1, textcol)
         text(screen, 50, 420, 30, s2, textcol)
+        text(screen, 50, 460, 30, s3, textcol)
         text(screen, 0, 0, 30, "Press esc, enter or click anywhere to return.", textcol, (wd_center, 550))
 
         if start:
