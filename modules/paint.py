@@ -487,7 +487,7 @@ def brushsize(screen, canvas):
                     canvas.e_thick = int(text_size.text) + 25
                     return
                 elif event.key == pg.K_BACKSPACE:
-                    text_size.text = text_size.size[:-1]
+                    text_size.text = text_size.text[:-1]
                 elif event.key == pg.K_h:
                     fade(screen, True, col = screencol)
                     help_screen(PAINT, screencol, textcol)

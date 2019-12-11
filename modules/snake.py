@@ -107,7 +107,7 @@ class Apple():
 
 def mainLoop(screencol, textcol, prev_screen = None, rect_pos = None):
     pg.display.set_caption('Snake')
-    start = True
+    start = True if prev_screen != None else False
     screenWd, screenHt = 1120, 630
     screenCenter = (screenWd//2, screenHt//2)
     screen = pg.display.set_mode((screenWd, screenHt))
@@ -178,6 +178,10 @@ def mainLoop(screencol, textcol, prev_screen = None, rect_pos = None):
             if snake.commited_livent():
                 alive = False
 
+        apple.show(screen)
+        snake.show(screen, textcol)
+        text(screen, screenWd - 70, 5, 30, str(score), textcol)
+
         if screencol == clr.black:
             sun(screen)
         else:
@@ -191,11 +195,7 @@ def mainLoop(screencol, textcol, prev_screen = None, rect_pos = None):
             if new.get_click(origin):
                 return True, screencol, textcol
 
-        apple.show(screen)
-        snake.show(screen, textcol)
-        text(screen, screenWd - 70, 5, 30, str(score), textcol)
-
-        if start and prev_screen != None:
+        if start:
             expand(screen, screen.copy(), [rect_pos[0], rect_pos[1]+90, 200, 113], prev_screen)
             start = False
         else:

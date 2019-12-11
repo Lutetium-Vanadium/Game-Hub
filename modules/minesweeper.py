@@ -170,6 +170,7 @@ class Grid():
 					queue.append((x-1, y-1))
 			self.box_list[x][y].txt = ''
 			check = True
+	
 	def click(self, i, j, screen):
 		box = self.box_list[i][j]
 		if box.flagged or box.activated == False:

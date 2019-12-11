@@ -3,13 +3,16 @@ from GUI_elements import*
 from clr import*
 import traceback
 from random import random, randrange
-from math import*
-from help import*
+from math import *
+from help import *
 
 FPS = 25
 clock = pg.time.Clock()
 screenWd, screenHt = 1120, 630
 center = (screenWd//2, screenHt//2)
+Vector = pg.math.Vector2
+
+TOT_ANGLE = 30
 
 mode = Button(screenWd - 45, 15, 20, 20)
 
@@ -25,35 +28,42 @@ class Ball():
 		self.rect = pg.Rect(pos, (radius*2, radius*2))
 		self.pos = pos
 		self.collidingrect = pg.Rect(pos[0]+self.velocity[0], pos[1]+self.velocity[1], self.rect[2], self.rect[3])
+
 	def move(self, screen_size):
 		if self.rect[0] <= 0 or self.rect[0] >= screen_size[0]-self.rect[2]:
 			return False
+		
 		elif self.collidingrect[1] <= 0:
 			self.rect[1] = 1
-			self.velocity[1] *= -1
+			self.velocity.reflect_ip(Vector(0, 1))
+		
 		elif self.collidingrect[1] >= screen_size[1]-self.rect[3]:
 			self.rect[1] = screen_size[1] - self.rect[3] + 1
-			self.velocity[1] *= -1
-		self.rect[0] += self.velocity[0]
-		self.rect[1] += self.velocity[1]
+			self.velocity.reflect_ip(Vector(0, 1))
+
+		self.rect[0] += self.velocity.x
+		self.rect[1] += self.velocity.y
 		return True
+
 	def show(self, screen):
-		self.collidingrect[0] = self.rect[0] + self.velocity[0]
-		self.collidingrect[1] = self.rect[1] + self.velocity[1]
+		self.collidingrect[0] = self.rect[0] + self.velocity.x
+		self.collidingrect[1] = self.rect[1] + self.velocity.y
 		screen.blit(self.surf, (round(self.rect[0]), round(self.rect[1])))
+
 	def reset(self):
 		self.rect[0] = self.pos[0]
 		self.rect[1] = self.pos[1]
 		self.velocity = self.create_velocity()
-		self.collidingrect[0] = self.pos[0] + self.velocity[0]
-		self.collidingrect[1] = self.pos[1] + self.velocity[1]
+		self.collidingrect[0] = self.pos[0] + self.velocity.x
+		self.collidingrect[1] = self.pos[1] + self.velocity.y
+
 	def create_velocity(self):
 		sign = randrange(-1, 2, 2)
 		direction = randrange(0, 2)
 		angle = (pi*direction) + ((random() * pi / 4)  * sign) + pi/18
 		vx = self.max_speed * cos(angle)
 		vy = self.max_speed * sin(angle)
-		return [vx, vy]
+		return Vector(vx, vy)
 
 class Paddle():
 	def __init__(self, size, col, center, side_dist, speed = 26, colourkey = green_screen):
@@ -72,6 +82,7 @@ class Paddle():
 		size = list(size)
 		size[0] += 2 * side_dist
 		self.rect = pg.Rect((x-side_dist, y), size)
+
 	def move(self, sign, screen_size):
 		self.pos[1] += sign * self.speed
 		if self.pos[1] <= 5:
@@ -79,10 +90,19 @@ class Paddle():
 		elif self.pos[1] >= screen_size[1]-5-self.size[1]:
 			self.pos[1] = screen_size[1] - 5 -self.size[1]
 		self.rect[1] = self.pos[1]
+
 	def show(self, screen):
 		screen.blit(self.surf, self.pos)
+
 	def hit(self, ball):
 		return self.rect.colliderect(ball.collidingrect)
+
+	def map_to_vector(self, val, velocity):
+		ratio = val / self.size[1]
+		angle = (ratio * TOT_ANGLE) - TOT_ANGLE/2
+		normal = Vector(tan(radians(angle)), 1)
+		velocity.rotate_ip(180)
+		velocity.reflect_ip(normal);
 
 class Field():
 	def __init__(self, paddle_size = (6, 110), paddle_dist = 10, pos = (10, 10), size = (1100, 500),
@@ -101,6 +121,7 @@ class Field():
 		self.surf = pg.Surface(size)
 		self.obj_list = [self.paddle1, self.paddle2, self.ball]
 		self.play = True
+
 	def show(self, screen, dark_mode, paused, game_over):
 		moved = False
 		if dark_mode:
@@ -112,17 +133,27 @@ class Field():
 		if self.paddle1.hit(self.ball):
 			x = self.paddle1.pos[0] + self.paddle1.size[0]
 			diff = (x - self.ball.rect[0])/self.ball.velocity[0]
+
 			self.ball.rect[1] += (self.ball.velocity[1] * diff)
 			self.ball.rect[0] = x
-			self.ball.velocity[0] *= -1
+
+			y = self.ball.rect[1] - self.paddle1.rect[1]
+			self.paddle1.map_to_vector(y, self.ball.velocity)
+
 			moved = True
+		
 		elif self.paddle2.hit(self.ball):
 			x = self.paddle2.pos[0] - self.ball.rect[2]
 			diff = (x - self.ball.rect[0])/self.ball.velocity[0]
+			
 			self.ball.rect[1] += (self.ball.velocity[1] * diff)
 			self.ball.rect[0] = x
-			self.ball.velocity[0] *= -1
+			
+			y = self.ball.rect[1] - self.paddle2.rect[1]
+			self.paddle2.map_to_vector(y, self.ball.velocity)
+
 			moved = True
+		
 		if paused == game_over == moved == False and self.play:
 			self.play = self.ball.move(self.size)
 
